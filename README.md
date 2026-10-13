@@ -1,47 +1,36 @@
-# Le Coin Brico
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-**La puissance entre vos mains** — Boutique en ligne d'outillage et quincaillerie en Algérie.
+## Getting Started
 
-## 🚀 Accès
+First, run the development server:
 
-Le site est publié sur GitHub Pages et accessible à : **https://lecoinbrico25R.github.io/Le-Coin-Brico**
-
-## 📋 Fonctionnalités
-
-- **Catalogue de produits** : Outillage, Quincaillerie, Coffres-forts
-- **Recherche et filtres** : Par catégorie, prix, disponibilité
-- **Panier et commandes** : Formulaire de commande simple et rapide
-- **Historique des commandes** : Suivi depuis votre compte
-- **Administrateur** : Gestion des produits (mot de passe : `admin123`)
-- **Stockage local** : Tous les données sont conservées dans localStorage
-
-## 🛠️ Technologies
-
-- HTML5 / CSS3 / JavaScript (vanilla)
-- localStorage pour la persistance
-- Responsive design
-- Nanoid pour les IDs uniques
-
-## 📁 Structure
-
-```
-├── index.html      # Page principale
-├── script.js       # Logique applicative (ES modules)
-├── style.css       # Styles
-└── README.md       # Documentation
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## 🔐 Sécurité
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- Mot de passe admin : `admin123` (à remplacer en production)
-- Les données utilisateur restent locales (aucun serveur)
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## 📝 Notes
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- Les images produits pointent vers des chemins `/assets/` — créez ce dossier et ajoutez vos images
-- Modifiez les coordonnées de contact dans le template footer
-- Customisez les produits par défaut dans `defaultData()`
+## Learn More
 
----
+To learn more about Next.js, take a look at the following resources:
 
-**© 2024 Le Coin Brico. Tous droits réservés.**
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
