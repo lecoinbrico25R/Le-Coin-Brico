@@ -1,93 +1,79 @@
-
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Lock, Mail, LogIn } from 'lucide-react';
+import { ShoppingCart, Package, Users, TrendingUp } from 'lucide-react';
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    orders: 0,
+    products: 0,
+    clients: 0,
+    revenue: 0
+  });
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  useEffect(() => {
+    loadStats();
+  }, []);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const loadStats = async () => {
+    try {
+      const { count: ordersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
 
-    if (error) {
-      setError('Email ou mot de passe incorrect');
-      setLoading(false);
-    } else {
-      router.push('/admin');
+      const { count: productsCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('product_price, quantity');
+
+      const revenue = orders?.reduce((sum, o) => sum + (o.product_price * o.quantity), 0) || 0;
+
+      setStats({
+        orders: ordersCount || 0,
+        products: productsCount || 0,
+        clients: 0,
+        revenue
+      });
+    } catch (error) {
+      console.error('Erreur chargement stats:', error);
     }
   };
 
+  const statCards = [
+    { title: 'Commandes', value: stats.orders, icon: ShoppingCart, color: 'bg-blue-500' },
+    { title: 'Produits', value: stats.products, icon: Package, color: 'bg-green-500' },
+    { title: 'Clients', value: stats.clients, icon: Users, color: 'bg-purple-500' },
+    { title: 'Revenus', value: `${stats.revenue.toLocaleString()} DA`, icon: TrendingUp, color: 'bg-[#F7941D]' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="bg-[#F7941D] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="text-white" size={32} />
-          </div>
-          <h1 className="text-2xl font-bold text-[#121212]">Admin LE COIN BRICO</h1>
-          <p className="text-gray-500 mt-2">Connectez-vous pour gérer votre boutique</p>
-        </div>
+    <div>
+      <h1 className="text-3xl font-bold text-[#121212] mb-8">Tableau de bord</h1>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          {error && (
-            <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm text-center">
-              {error}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {statCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.title} className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`${stat.color} p-3 rounded-lg`}>
+                  <Icon className="text-white" size={24} />
+                </div>
+              </div>
+              <h3 className="text-gray-500 text-sm mb-1">{stat.title}</h3>
+              <p className="text-2xl font-bold text-[#121212]">{stat.value}</p>
             </div>
-          )}
+          );
+        })}
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]"
-                placeholder="votre@email.com"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#F7941D] hover:bg-orange-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-          >
-            <LogIn size={20} />
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <h2 className="text-xl font-bold text-[#121212] mb-4">Bienvenue sur votre panneau d'administration</h2>
+        <p className="text-gray-600">Utilisez le menu de gauche pour gérer vos produits, commandes et paramètres.</p>
       </div>
     </div>
   );
