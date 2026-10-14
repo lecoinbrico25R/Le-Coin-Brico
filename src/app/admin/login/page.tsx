@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -26,6 +27,9 @@ export default function LoginPage() {
       setError('Email ou mot de passe incorrect');
       setLoading(false);
     } else {
+      // ✅ Ces 2 lignes sont essentielles pour accéder au dashboard
+      localStorage.setItem('adminAuth', 'true');
+      localStorage.setItem('adminEmail', email);
       router.push('/admin');
     }
   };
