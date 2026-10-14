@@ -41,9 +41,9 @@ export default function Home() {
     { name: 'Quincaillerie', icon: '🔩', image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?w=300&h=200&fit=crop', lien: '#' },
     { name: 'Sécurité', icon: '🛡️', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=300&h=200&fit=crop', lien: '#' },
     { name: t('header.extractors'), icon: '⚡', image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=300&h=200&fit=crop', lien: '/extracteur' },
-    { name: 'Visserie', icon: '🔧', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&h=200&fit=crop', lien: '#' },
+    { name: 'Visserie', icon: '', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&h=200&fit=crop', lien: '#' },
     { name: 'Consommables', icon: '📦', image: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=300&h=200&fit=crop', lien: '#' },
-    { name: 'Chargeur batterie', icon: '🔋', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=200&fit=crop', lien: '/chargeur-batterie' },
+    { name: 'Chargeur batterie', icon: '', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=200&fit=crop', lien: '/chargeur-batterie' },
   ];
 
   return (
@@ -53,7 +53,7 @@ export default function Home() {
         <div className="bg-[#121212] text-white py-2 text-sm">
           <div className="container mx-auto px-4 flex justify-between items-center">
             <span className="flex items-center gap-2">
-              <span className="text-[#F7941D]"></span>
+              <span className="text-[#F7941D]">🚚</span>
               {t('header.delivery')}
             </span>
             <div className="flex items-center gap-4">
@@ -114,6 +114,7 @@ export default function Home() {
         </nav>
       </header>
 
+      {/* HERO */}
       <section className="relative bg-gradient-to-r from-[#121212] to-[#303030] text-white py-20 overflow-hidden">
         <div className="absolute inset-0 opacity-30 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero-coffres.jpg')" }}></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -125,6 +126,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FEATURES */}
       <section className="bg-white py-8 border-b">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -136,10 +138,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CATEGORIES */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-[#121212] mb-8 text-center md:text-left">{t('home.categories')}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {categories.map((cat) => (
               <a key={cat.name} href={cat.lien} className="bg-white rounded-xl overflow-hidden hover:shadow-lg cursor-pointer border border-gray-100 transition-shadow">
                 <div className="h-32 overflow-hidden"><img src={cat.image} alt={cat.name} className="w-full h-full object-cover" /></div>
@@ -150,6 +153,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-[#121212] mb-12">{t('home.howItWorks')}</h2>
@@ -170,6 +174,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FOOTER */}
       <footer className="bg-[#121212] text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -185,7 +190,7 @@ export default function Home() {
               </ul>
             </div>
             <div><h4 className="font-bold mb-4">{t('footer.info')}</h4><ul className="space-y-2 text-gray-400"><li><a href="#" className="hover:text-[#F7941D]">{t('footer.shipping')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.payment')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.contact')}</a></li></ul></div>
-            <div><h4 className="font-bold mb-4">{t('footer.contact')}</h4><p className="text-gray-400 mb-2"> {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400">📍 {t('footer.location')}</p></div>
+            <div><h4 className="font-bold mb-4">{t('footer.contact')}</h4><p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400"> {t('footer.location')}</p></div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"><p>© 2026 LE COIN BRICO. {t('footer.rights')}</p></div>
         </div>
