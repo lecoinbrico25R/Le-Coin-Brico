@@ -10,6 +10,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // ✅ Ne pas appliquer le layout sur la page login
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
     if (auth !== 'true') {
