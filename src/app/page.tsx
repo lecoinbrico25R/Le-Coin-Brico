@@ -37,13 +37,14 @@ export default function Home() {
   };
 
   const categories = [
-    { name: t('header.safes'), icon: '🔐', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop', lien: '/coffres-forts' },
+    { name: t('header.safes'), icon: '', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop', lien: '/coffres-forts' },
     { name: 'Quincaillerie', icon: '🔩', image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?w=300&h=200&fit=crop', lien: '#' },
     { name: 'Sécurité', icon: '🛡️', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=300&h=200&fit=crop', lien: '#' },
     { name: t('header.extractors'), icon: '⚡', image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=300&h=200&fit=crop', lien: '/extracteur' },
-    { name: 'Visserie', icon: '', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&h=200&fit=crop', lien: '#' },
+    { name: 'Postes à souder', icon: '🔥', image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=300&h=200&fit=crop', lien: '/postes-a-souder' },
+    { name: 'Chargeur batterie', icon: '🔋', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=200&fit=crop', lien: '/chargeur-batterie' },
+    { name: 'Visserie', icon: '🔧', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&h=200&fit=crop', lien: '#' },
     { name: 'Consommables', icon: '📦', image: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=300&h=200&fit=crop', lien: '#' },
-    { name: 'Chargeur batterie', icon: '', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=200&fit=crop', lien: '/chargeur-batterie' },
   ];
 
   return (
@@ -106,6 +107,7 @@ export default function Home() {
                 <li><a href="/" className="hover:text-[#F7941D] whitespace-nowrap font-medium border-b-2 border-[#F7941D] pb-1">{t('header.home')}</a></li>
                 <li><a href="/coffres-forts" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.safes')}</a></li>
                 <li><a href="/extracteur" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.extractors')}</a></li>
+                <li><a href="/postes-a-souder" className="hover:text-[#F7941D] whitespace-nowrap">Postes à souder</a></li>
                 <li><a href="/chargeur-batterie" className="hover:text-[#F7941D] whitespace-nowrap">Chargeur batterie</a></li>
                 <li><a href="/contact" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.contact')}</a></li>
               </ul>
@@ -185,12 +187,13 @@ export default function Home() {
                 <li><a href="/" className="hover:text-[#F7941D]">{t('header.home')}</a></li>
                 <li><a href="/coffres-forts" className="hover:text-[#F7941D]">{t('header.safes')}</a></li>
                 <li><a href="/extracteur" className="hover:text-[#F7941D]">{t('header.extractors')}</a></li>
+                <li><a href="/postes-a-souder" className="hover:text-[#F7941D]">Postes à souder</a></li>
                 <li><a href="/chargeur-batterie" className="hover:text-[#F7941D]">Chargeur batterie</a></li>
                 <li><a href="/contact" className="hover:text-[#F7941D]">{t('header.contact')}</a></li>
               </ul>
             </div>
             <div><h4 className="font-bold mb-4">{t('footer.info')}</h4><ul className="space-y-2 text-gray-400"><li><a href="#" className="hover:text-[#F7941D]">{t('footer.shipping')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.payment')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.contact')}</a></li></ul></div>
-            <div><h4 className="font-bold mb-4">{t('footer.contact')}</h4><p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400"> {t('footer.location')}</p></div>
+            <div><h4 className="font-bold mb-4">{t('footer.contact')}</h4><p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400">📍 {t('footer.location')}</p></div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"><p>© 2026 LE COIN BRICO. {t('footer.rights')}</p></div>
         </div>
