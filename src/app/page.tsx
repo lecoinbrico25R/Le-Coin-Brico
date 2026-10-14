@@ -1,47 +1,34 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Truck, Shield, CreditCard, Headphones, Search, User, Heart, ShoppingCart, Phone, Menu } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  stock: number;
-}
-
 export default function Home() {
   const { language, setLanguage, t } = useTranslation();
   const [siteSettings, setSiteSettings] = useState({
-    phone: '0560 14 36 57',
-    email: 'le.coin.brico25@gmail.com',
-    address: 'Cité ONAMA Constantine Algérie',
-    opening_hours: 'Dim - Jeu : 9h - 18h, Vendredi : Fermé, Samedi : 9h - 13h'
+    phone: '0550 12 34 56',
+    email: 'le.coin.brico25@gmail.com'
   });
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
 
-  useEffect(() => { 
+  useEffect(() => {
     loadSettings();
-    loadProducts();
   }, []);
 
   const loadSettings = async () => {
     try {
-      const { data, error } = await supabase.from('site_settings').select('*').single();
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .single();
+
       if (error) throw error;
+      
       if (data) {
         setSiteSettings({
           phone: data.phone || siteSettings.phone,
-          email: data.email || siteSettings.email,
-          address: data.address || siteSettings.address,
-          opening_hours: data.opening_hours || siteSettings.opening_hours
+          email: data.email || siteSettings.email
         });
       }
     } catch (error) {
@@ -49,31 +36,31 @@ export default function Home() {
     }
   };
 
-  const loadProducts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('id', { ascending: true })
-        .limit(8);
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error) {
-      console.error('Erreur chargement produits:', error);
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
+  const categories = [
+    { name: t('header.safes'), icon: '🔐', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop', lien: '/coffres-forts' },
+    { name: 'Quincaillerie', icon: '🔩', image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?w=300&h=200&fit=crop', lien: '#' },
+    { name: 'Sécurité', icon: '🛡️', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=300&h=200&fit=crop', lien: '#' },
+    { name: t('header.extractors'), icon: '⚡', image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=300&h=200&fit=crop', lien: '/extracteur' },
+    { name: 'Visserie', icon: '🔧', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&h=200&fit=crop', lien: '#' },
+    { name: 'Consommables', icon: '📦', image: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=300&h=200&fit=crop', lien: '#' },
+    { name: 'Chargeur batterie', icon: '🔋', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=200&fit=crop', lien: '/chargeur-batterie' },
+  ];
 
   return (
     <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* HEADER */}
       <header className="sticky top-0 z-50 bg-white shadow-md">
         <div className="bg-[#121212] text-white py-2 text-sm">
           <div className="container mx-auto px-4 flex justify-between items-center">
-            <span className="flex items-center gap-2"><span className="text-[#F7941D]">🚚</span>{t('header.delivery')}</span>
+            <span className="flex items-center gap-2">
+              <span className="text-[#F7941D]"></span>
+              {t('header.delivery')}
+            </span>
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1"><Phone size={14} className="text-[#F7941D]" />Besoin d'aide ? {siteSettings.phone}</span>
+              <span className="flex items-center gap-1">
+                <Phone size={14} className="text-[#F7941D]" />
+                {t('header.help')} {siteSettings.phone}
+              </span>
               <div className="flex items-center gap-2">
                 <button onClick={() => setLanguage('fr')} className={`px-2 py-1 rounded text-sm font-medium ${language === 'fr' ? 'bg-[#F7941D] text-white' : 'text-gray-300 hover:text-white'}`}>FR</button>
                 <span className="text-gray-500">|</span>
@@ -119,7 +106,7 @@ export default function Home() {
                 <li><a href="/" className="hover:text-[#F7941D] whitespace-nowrap font-medium border-b-2 border-[#F7941D] pb-1">{t('header.home')}</a></li>
                 <li><a href="/coffres-forts" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.safes')}</a></li>
                 <li><a href="/extracteur" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.extractors')}</a></li>
-                <li><a href="/postes-a-souder" className="hover:text-[#F7941D] whitespace-nowrap">Postes à souder</a></li>
+                <li><a href="/chargeur-batterie" className="hover:text-[#F7941D] whitespace-nowrap">Chargeur batterie</a></li>
                 <li><a href="/contact" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.contact')}</a></li>
               </ul>
             </div>
@@ -151,38 +138,15 @@ export default function Home() {
 
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#121212] mb-8 text-center">Nos produits</h2>
-          
-          {loadingProducts ? (
-            <p className="text-center text-gray-500">Chargement des produits...</p>
-          ) : products.length === 0 ? (
-            <p className="text-center text-gray-500">Aucun produit disponible pour le moment.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <Link href={`/produit/${product.id}`} key={product.id} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100 block">
-                  <div className="h-48 overflow-hidden bg-gray-100">
-                    {product.image ? (
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">Pas d'image</div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <span className="inline-block px-2 py-1 bg-orange-100 text-[#F7941D] text-xs rounded-full mb-2">{product.category}</span>
-                    <h3 className="font-bold text-lg text-[#121212] mb-2">{product.name}</h3>
-                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xl font-bold text-[#F7941D]">{product.price.toLocaleString()} DA</span>
-                      <button className="bg-[#121212] text-white p-2 rounded-lg hover:bg-[#F7941D] transition-colors">
-                        <ShoppingCart size={20} />
-                      </button>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+          <h2 className="text-3xl font-bold text-[#121212] mb-8 text-center md:text-left">{t('home.categories')}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.map((cat) => (
+              <a key={cat.name} href={cat.lien} className="bg-white rounded-xl overflow-hidden hover:shadow-lg cursor-pointer border border-gray-100 transition-shadow">
+                <div className="h-32 overflow-hidden"><img src={cat.image} alt={cat.name} className="w-full h-full object-cover" /></div>
+                <div className="p-4 text-center"><div className="text-3xl mb-2">{cat.icon}</div><h3 className="font-bold text-[#121212] text-sm">{cat.name}</h3></div>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -209,36 +173,21 @@ export default function Home() {
       <footer className="bg-[#121212] text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-xl mb-4">{t('footer.company')}</h3>
-              <p className="text-gray-400">{t('footer.slogan')}</p>
-            </div>
+            <div><h3 className="font-bold text-xl mb-4">{t('footer.company')}</h3><p className="text-gray-400">{t('footer.slogan')}</p></div>
             <div>
               <h4 className="font-bold mb-4">{t('footer.navigation')}</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="/" className="hover:text-[#F7941D]">{t('header.home')}</a></li>
                 <li><a href="/coffres-forts" className="hover:text-[#F7941D]">{t('header.safes')}</a></li>
+                <li><a href="/extracteur" className="hover:text-[#F7941D]">{t('header.extractors')}</a></li>
+                <li><a href="/chargeur-batterie" className="hover:text-[#F7941D]">Chargeur batterie</a></li>
                 <li><a href="/contact" className="hover:text-[#F7941D]">{t('header.contact')}</a></li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-bold mb-4">{t('footer.info')}</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-[#F7941D]">{t('footer.shipping')}</a></li>
-                <li><a href="#" className="hover:text-[#F7941D]">{t('footer.payment')}</a></li>
-                <li><a href="/contact" className="hover:text-[#F7941D]">{t('footer.contactPage')}</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">{t('footer.contact')}</h4>
-              <p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p>
-              <p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p>
-              <p className="text-gray-400">📍 {siteSettings.address}</p>
-            </div>
+            <div><h4 className="font-bold mb-4">{t('footer.info')}</h4><ul className="space-y-2 text-gray-400"><li><a href="#" className="hover:text-[#F7941D]">{t('footer.shipping')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.payment')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.contact')}</a></li></ul></div>
+            <div><h4 className="font-bold mb-4">{t('footer.contact')}</h4><p className="text-gray-400 mb-2"> {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400">📍 {t('footer.location')}</p></div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2026 LE COIN BRICO. {t('footer.rights')}</p>
-          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"><p>© 2026 LE COIN BRICO. {t('footer.rights')}</p></div>
         </div>
       </footer>
     </div>
