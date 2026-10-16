@@ -3,33 +3,59 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Menu, X } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Menu, X, Loader2 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Ne pas appliquer le layout sur la page login
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    if (auth !== 'true') {
-      router.push('/admin/login');
-    } else {
-      setIsAuthenticated(true);
-    }
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/admin/login');
+      } else {
+        setIsAuthenticated(true);
+        setAdminEmail(session.user.email || 'Admin');
+      }
+      setLoading(false);
+    };
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setIsAuthenticated(false);
+        router.push('/admin/login');
+      } else {
+        setIsAuthenticated(true);
+        setAdminEmail(session.user.email || 'Admin');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    localStorage.removeItem('adminEmail');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     router.push('/admin/login');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#F7941D]" size={48} />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
@@ -45,7 +71,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar Desktop */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-[#121212] text-white">
         <div className="p-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -68,9 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-[#F7941D] text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  isActive ? 'bg-[#F7941D] text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
               >
                 <Icon size={20} />
@@ -91,7 +114,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Sidebar Mobile */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)}></div>
@@ -118,9 +140,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-[#F7941D] text-white'
-                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      isActive ? 'bg-[#F7941D] text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                     }`}
                   >
                     <Icon size={20} />
@@ -143,9 +163,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
         <header className="bg-white shadow-sm border-b border-gray-200 p-4 flex items-center justify-between">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -156,9 +174,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-bold text-[#121212]">
-                {localStorage.getItem('adminEmail') || 'Admin'}
-              </p>
+              <p className="text-sm font-bold text-[#121212]">{adminEmail}</p>
               <p className="text-xs text-gray-500">Administrateur</p>
             </div>
             <div className="w-10 h-10 bg-[#F7941D] rounded-full flex items-center justify-center text-white font-bold">
@@ -167,7 +183,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>

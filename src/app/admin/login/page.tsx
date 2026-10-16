@@ -2,92 +2,95 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Shield, Lock, User, LogIn } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 
-export default function AdminLoginPage() {
+export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    // Simulation simple de connexion (à remplacer par ta vraie logique Supabase plus tard)
-    if (email === 'admin@lecoinbrico.com' && password === 'admin123') {
-      localStorage.setItem('isAdmin', 'true');
-      router.push('/admin');
-    } else {
-      setError('Email ou mot de passe incorrect. Essayez admin@lecoinbrico.com / admin123');
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        setError('Email ou mot de passe incorrect');
+      } else {
+        router.push('/admin');
+      }
+    } catch (err) {
+      setError('Une erreur est survenue');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-xl shadow-lg border w-full max-w-md">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-4">
-            <div className="w-16 h-16 bg-[#121212] rounded-lg flex items-center justify-center mx-auto text-[#F7941D]">
-              <Shield size={32} />
-            </div>
-          </Link>
-          <h1 className="text-2xl font-bold text-[#121212]">Espace Administrateur</h1>
-          <p className="text-gray-500 mt-2">Connectez-vous pour gérer la boutique</p>
+          <div className="w-16 h-16 bg-[#F7941D] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="text-white" size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-[#121212]">Administration</h1>
+          <p className="text-gray-500 text-sm mt-2">LE COIN BRICO - Accès réservé</p>
         </div>
 
-        <form className="space-y-4" onSubmit={handleLogin}>
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2 text-sm border border-red-200">
+            <AlertCircle size={16} /> {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <div className="relative">
-              <User className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input 
-                type="email" 
+              <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
+              <input
+                type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@lecoinbrico.com" 
-                className="w-full pl-10 p-3 border rounded-lg focus:ring-2 focus:ring-[#F7941D] outline-none" 
-                required
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F7941D] focus:border-transparent outline-none"
+                placeholder="ton@email.com"
               />
             </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">Mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input 
-                type="password" 
+              <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+              <input
+                type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••" 
-                className="w-full pl-10 p-3 border rounded-lg focus:ring-2 focus:ring-[#F7941D] outline-none" 
-                required
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F7941D] focus:border-transparent outline-none"
+                placeholder="••••••••"
               />
             </div>
           </div>
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-[#121212] hover:bg-[#303030] text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full bg-[#F7941D] hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            {loading ? 'Connexion...' : <><LogIn size={20} /> Se connecter</>}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Se connecter'}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:text-[#F7941D]">
-            ← Retour à la boutique
-          </Link>
-        </div>
       </div>
     </div>
   );
