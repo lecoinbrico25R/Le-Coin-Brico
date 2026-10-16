@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { TranslationProvider } from "@/context/TranslationContext";
+import PublicLayout from "@/components/PublicLayout";
 
 export const metadata: Metadata = {
   title: "LE COIN BRICO - Coffres-forts et Outillage en Algérie",
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="fr">
       <body>
         <TranslationProvider>
-          {children}
+          <PublicLayout>
+            {children}
+          </PublicLayout>
         </TranslationProvider>
       </body>
     </html>
