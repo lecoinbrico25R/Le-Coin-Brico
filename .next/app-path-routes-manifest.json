@@ -1,5 +1,4 @@
 {
-  "/   chargeur-batterie/page": "/   chargeur-batterie",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
   "/admin/clients/page": "/admin/clients",
@@ -8,10 +7,16 @@
   "/admin/page": "/admin",
   "/admin/parametres/page": "/admin/parametres",
   "/admin/produits/page": "/admin/produits",
+  "/cart/page": "/cart",
+  "/categories/page": "/categories",
+  "/chargeur-batterie/page": "/chargeur-batterie",
   "/coffres-forts/page": "/coffres-forts",
   "/contact/page": "/contact",
   "/extracteur/page": "/extracteur",
   "/favicon.ico/route": "/favicon.ico",
+  "/login/page": "/login",
   "/page": "/",
-  "/produit/[id]/page": "/produit/[id]"
+  "/postes-a-souder/page": "/postes-a-souder",
+  "/produit/[id]/page": "/produit/[id]",
+  "/wishlist/page": "/wishlist"
 }

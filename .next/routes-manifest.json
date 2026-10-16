@@ -39,12 +39,6 @@
       "namedRegex": "^/(?:/)?$"
     },
     {
-      "page": "/   chargeur-batterie",
-      "regex": "^/   chargeur\\-batterie(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/   chargeur\\-batterie(?:/)?$"
-    },
-    {
       "page": "/_global-error",
       "regex": "^/_global\\-error(?:/)?$",
       "routeKeys": {},
@@ -93,6 +87,24 @@
       "namedRegex": "^/admin/produits(?:/)?$"
     },
     {
+      "page": "/cart",
+      "regex": "^/cart(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/cart(?:/)?$"
+    },
+    {
+      "page": "/categories",
+      "regex": "^/categories(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/categories(?:/)?$"
+    },
+    {
+      "page": "/chargeur-batterie",
+      "regex": "^/chargeur\\-batterie(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/chargeur\\-batterie(?:/)?$"
+    },
+    {
       "page": "/coffres-forts",
       "regex": "^/coffres\\-forts(?:/)?$",
       "routeKeys": {},
@@ -115,6 +127,24 @@
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/postes-a-souder",
+      "regex": "^/postes\\-a\\-souder(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/postes\\-a\\-souder(?:/)?$"
+    },
+    {
+      "page": "/wishlist",
+      "regex": "^/wishlist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/wishlist(?:/)?$"
     }
   ],
   "dataRoutes": [],
