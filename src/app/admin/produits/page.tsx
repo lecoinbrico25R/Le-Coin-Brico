@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit, Trash2, Save, X, Package, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Package, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -14,6 +14,7 @@ interface Product {
   price: number;
   category: string;
   image: string;
+  images?: string[];
   stock: number;
 }
 
@@ -27,6 +28,7 @@ export default function AdminProduits() {
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const multipleFileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,6 +38,7 @@ export default function AdminProduits() {
     price: '',
     category: 'coffres-forts',
     image: '',
+    images: [] as string[],
     stock: ''
   });
 
@@ -60,7 +63,7 @@ export default function AdminProduits() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', name_ar: '', description: '', description_ar: '', price: '', category: 'coffres-forts', image: '', stock: '' });
+    setFormData({ name: '', name_ar: '', description: '', description_ar: '', price: '', category: 'coffres-forts', image: '', images: [], stock: '' });
     setEditingId(null);
     setShowForm(false);
   };
@@ -74,6 +77,7 @@ export default function AdminProduits() {
       price: product.price.toString(),
       category: product.category,
       image: product.image || '',
+      images: product.images || [],
       stock: product.stock.toString()
     });
     setEditingId(product.id);
@@ -81,13 +85,10 @@ export default function AdminProduits() {
   };
 
   const handleImageUpload = async (file: File) => {
-    console.log("Tentative d'upload du fichier :", file.name, file.size);
-    
     if (!file.type.startsWith('image/')) {
-      showMessage('Veuillez sélectionner une image valide (JPG, PNG)', 'error');
+      showMessage('Veuillez sélectionner une image valide', 'error');
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       showMessage('L\'image ne doit pas dépasser 5MB', 'error');
       return;
@@ -99,44 +100,77 @@ export default function AdminProduits() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `products/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('products')
-        .upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('products').upload(filePath, file);
+      if (uploadError) throw uploadError;
 
-      if (uploadError) {
-        console.error("Erreur Supabase Upload:", uploadError);
-        throw uploadError;
-      }
-
-      const { data: urlData } = supabase.storage.from('products').getPublicUrl(filePath);
-      
-      setFormData(prev => ({ ...prev, image: urlData.publicUrl }));
-      showMessage('Image uploadée avec succès !', 'success');
+      const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+      setFormData({ ...formData, image: data.publicUrl });
+      showMessage('Image principale uploadée !', 'success');
     } catch (error: any) {
-      console.error('Erreur détaillée upload image:', error);
-      showMessage(`Erreur upload : ${error.message || 'Vérifiez que le bucket "products" existe et est public dans Supabase'}`, 'error');
+      showMessage(`Erreur upload : ${error.message}`, 'error');
     } finally {
       setUploading(false);
     }
   };
 
+  const handleMultipleImagesUpload = async (files: FileList) => {
+    setUploading(true);
+    const uploadedUrls: string[] = [...formData.images];
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        if (file.size > 5 * 1024 * 1024) {
+          showMessage(`Fichier ${file.name} trop volumineux (max 5MB)`, 'error');
+          continue;
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${i}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `products/${fileName}`;
+
+        const { error } = await supabase.storage.from('products').upload(filePath, file);
+        if (error) throw error;
+
+        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+        uploadedUrls.push(data.publicUrl);
+      }
+      
+      setFormData({ ...formData, images: uploadedUrls });
+      showMessage(`${files.length} image(s) ajoutée(s) !`, 'success');
+    } catch (error: any) {
+      showMessage(`Erreur upload : ${error.message}`, 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = formData.images.filter((_, i) => i !== index);
+    setFormData({ ...formData, images: newImages });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleImageUpload(file);
-    // Reset input value to allow selecting the same file again if needed
+    e.target.value = '';
+  };
+
+  const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) handleMultipleImagesUpload(files);
     e.target.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     const file = e.dataTransfer.files[0];
     if (file) handleImageUpload(file);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
   };
 
   const handleSave = async () => {
@@ -153,6 +187,7 @@ export default function AdminProduits() {
         price: parseFloat(formData.price),
         category: formData.category,
         image: formData.image,
+        images: formData.images,
         stock: parseInt(formData.stock) || 0
       };
       
@@ -166,29 +201,26 @@ export default function AdminProduits() {
       }
       
       if (error) throw error;
-      
-      showMessage(editingId ? 'Produit modifié avec succès !' : 'Produit ajouté avec succès !', 'success');
+      showMessage(editingId ? 'Produit modifié !' : 'Produit ajouté !', 'success');
       resetForm();
       loadProducts();
     } catch (error: any) {
-      console.error('Erreur sauvegarde:', error);
       showMessage(`Erreur : ${error.message}`, 'error');
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Supprimer ce produit définitivement ?')) return;
+    if (!confirm('Supprimer ce produit ?')) return;
     try {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) throw error;
+      await supabase.from('products').delete().eq('id', id);
       showMessage('Produit supprimé !', 'success');
       loadProducts();
     } catch (error) {
-      showMessage('Erreur lors de la suppression', 'error');
+      showMessage('Erreur suppression', 'error');
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p>Chargement...</p></div>;
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="animate-spin text-[#F7941D]" size={40} /></div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -209,9 +241,7 @@ export default function AdminProduits() {
 
       <div className="container mx-auto px-4 py-6">
         {message && (
-          <div className={`mb-4 p-4 rounded-lg font-medium ${messageType === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-            {message}
-          </div>
+          <div className={`mb-4 p-4 rounded-lg font-medium ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{message}</div>
         )}
 
         {showForm && (
@@ -247,36 +277,48 @@ export default function AdminProduits() {
                 <input type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: 10" />
               </div>
               
-              {/* ZONE D'UPLOAD AMÉLIORÉE */}
+              {/* Image Principale */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image du produit</label>
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#F7941D] hover:bg-orange-50 transition-all cursor-pointer group"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image principale (affiche dans les listes) *</label>
+                <div onDrop={handleDrop} onDragOver={handleDragOver} onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#F7941D] hover:bg-orange-50 transition-all cursor-pointer">
                   {formData.image ? (
-                    <div className="space-y-3">
-                      <img src={formData.image} alt="Aperçu" className="mx-auto max-h-48 rounded-lg shadow-sm" />
-                      <p className="text-sm text-[#F7941D] font-medium">Cliquez ou glissez une nouvelle image pour la remplacer</p>
+                    <div className="space-y-2">
+                      <img src={formData.image} alt="Principale" className="mx-auto max-h-40 rounded-lg" />
+                      <p className="text-sm text-[#F7941D]">Cliquez pour changer l'image principale</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <Upload className="mx-auto text-gray-400 group-hover:text-[#F7941D] transition-colors" size={48} />
-                      <p className="text-gray-600 font-medium">Glissez-déposez une image ici ou cliquez pour sélectionner</p>
-                      <p className="text-xs text-gray-400">PNG, JPG jusqu'à 5MB</p>
+                    <div className="space-y-2">
+                      <Upload className="mx-auto text-gray-400" size={48} />
+                      <p className="text-gray-500">Glissez ou cliquez pour l'image principale</p>
                     </div>
                   )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                 </div>
-                {uploading && <p className="text-sm text-[#F7941D] mt-2 font-medium animate-pulse">⏳ Upload en cours...</p>}
+                {uploading && <p className="text-sm text-[#F7941D] mt-2">Upload en cours...</p>}
+              </div>
+
+              {/* Galerie d'images multiples */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Galerie photos (plusieurs images)</label>
+                <div onClick={() => multipleFileInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#F7941D] hover:bg-gray-50 transition-all cursor-pointer">
+                  <ImageIcon className="mx-auto text-gray-400 mb-2" size={32} />
+                  <p className="text-sm text-gray-600">Cliquez pour ajouter plusieurs photos</p>
+                  <p className="text-xs text-gray-400">PNG, JPG jusqu'à 5MB chacune</p>
+                  <input ref={multipleFileInputRef} type="file" accept="image/*" multiple onChange={handleMultipleFilesChange} className="hidden" />
+                </div>
+                
+                {formData.images.length > 0 && (
+                  <div className="mt-4 grid grid-cols-4 gap-3">
+                    {formData.images.map((img, idx) => (
+                      <div key={idx} className="relative group">
+                        <img src={img} alt={`Galerie ${idx}`} className="w-full h-24 object-cover rounded-lg" />
+                        <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -302,10 +344,7 @@ export default function AdminProduits() {
             <h2 className="text-lg font-bold text-[#121212]">Liste des produits ({products.length})</h2>
           </div>
           {products.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              <Package className="mx-auto mb-3 text-gray-300" size={48} />
-              <p>Aucun produit trouvé. Commencez par en ajouter un !</p>
-            </div>
+            <div className="p-12 text-center text-gray-500"><Package className="mx-auto mb-3 text-gray-300" size={48} /><p>Aucun produit trouvé.</p></div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -315,29 +354,29 @@ export default function AdminProduits() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Nom</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Catégorie</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Prix</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stock</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Photos</th>
                     <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={product.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm text-gray-500">#{product.id}</td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-bold text-[#121212]">{product.name}</div>
                         {product.name_ar && <div className="text-xs text-gray-500 mt-1" dir="rtl">{product.name_ar}</div>}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#F7941D] border border-orange-200">
-                          {product.category}
+                      <td className="px-6 py-4"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#F7941D]">{product.category}</span></td>
+                      <td className="px-6 py-4 text-sm font-bold text-[#121212]">{product.price.toLocaleString()} DA</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          {product.images?.length || 0} photo{(product.images?.length || 0) > 1 ? 's' : ''}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-[#121212]">{product.price.toLocaleString()} DA</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{product.stock}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier"><Edit size={18} /></button>
-                          <button onClick={() => handleDelete(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer"><Trash2 size={18} /></button>
+                          <button onClick={() => handleEdit(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button>
+                          <button onClick={() => handleDelete(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
                         </div>
                       </td>
                     </tr>
