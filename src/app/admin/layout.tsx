@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // ✅ Ne pas appliquer le layout sur la page login
+  // Ne pas appliquer le layout sur la page login
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
@@ -35,8 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const menuItems = [
-    // ✅ PROBLÈME #5bis CORRIGÉ : Lien explicite vers /admin/dashboard
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
     { name: 'Produits', href: '/admin/produits', icon: Package },
     { name: 'Clients', href: '/admin/clients', icon: Users },
