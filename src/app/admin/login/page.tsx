@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function AdminLogin() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,7 +24,9 @@ export default function AdminLogin() {
       if (error) {
         setError('Email ou mot de passe incorrect');
       } else {
-        router.push('/admin');
+        // ✅ Utiliser window.location.href au lieu de router.push
+        // pour forcer un rechargement complet et détecter la session
+        window.location.href = '/admin';
       }
     } catch (err) {
       setError('Une erreur est survenue');
