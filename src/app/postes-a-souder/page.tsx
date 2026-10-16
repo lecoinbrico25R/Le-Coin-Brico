@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Zap, Heart, ShoppingCart, Loader2 } from 'lucide-react';
+import { Zap, Heart, ShoppingCart, Loader2, Eye } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
@@ -63,9 +63,9 @@ export default function PostesASouderPage() {
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4 flex items-center gap-4">
             <Zap size={48} className="text-[#F7941D]" />
-            Postes à souder
+            {t('welding.title') || 'Nos Postes à souder'}
           </h1>
-          <p className="text-xl text-gray-300">Postes à souder professionnels pour tous vos travaux</p>
+          <p className="text-xl text-gray-300">{t('welding.subtitle') || 'Outils professionnels'}</p>
         </div>
       </section>
 
@@ -81,7 +81,6 @@ export default function PostesASouderPage() {
         ) : products.length === 0 ? (
           <div className="text-center py-20 text-gray-500 bg-white rounded-lg">
             <p>Aucun produit trouvé dans cette catégorie pour le moment.</p>
-            <p className="text-sm mt-2">Ajoutez des produits depuis le panneau d'administration avec la catégorie "postes-a-souder".</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -89,11 +88,15 @@ export default function PostesASouderPage() {
               const inWishlist = isInWishlist(produit.id);
               return (
                 <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden flex flex-col">
-                  <div className="h-48 bg-gray-100">
-                    <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover" />
-                  </div>
+                  {/* ✅ LIEN SUR L'IMAGE */}
+                  <Link href={`/produit/${produit.id}`} className="h-48 bg-gray-100 block">
+                    <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                  </Link>
                   <div className="p-4 flex flex-col flex-grow">
-                    <h3 className="font-bold text-[#121212] mb-2 line-clamp-2">{language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}</h3>
+                    {/* ✅ LIEN SUR LE TITRE */}
+                    <Link href={`/produit/${produit.id}`} className="font-bold text-[#121212] mb-2 line-clamp-2 hover:text-[#F7941D] transition-colors">
+                      {language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}
+                    </Link>
                     <div className="flex items-center gap-2 mb-4 mt-auto">
                       <span className="text-2xl font-bold text-[#F7941D]">{produit.price?.toLocaleString()} DA</span>
                     </div>
@@ -101,6 +104,10 @@ export default function PostesASouderPage() {
                       <button onClick={() => addToCart({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className="flex-1 bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg text-center transition-colors flex items-center justify-center gap-1">
                         <ShoppingCart size={16} /> {t('products.view') || 'Ajouter'}
                       </button>
+                      {/* ✅ BOUTON ŒIL POUR VOIR LES DÉTAILS */}
+                      <Link href={`/produit/${produit.id}`} className="p-3 border border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D] rounded-lg transition-colors flex items-center justify-center" title="Voir les détails">
+                        <Eye size={20} />
+                      </Link>
                       <button onClick={() => inWishlist ? removeFromWishlist(produit.id) : addToWishlist({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className={`p-3 border rounded-lg transition-colors ${inWishlist ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D]'}`}>
                         <Heart size={20} fill={inWishlist ? "currentColor" : "none"} />
                       </button>
