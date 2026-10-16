@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { TranslationProvider } from "@/context/TranslationContext";
-import PublicLayout from "@/components/PublicLayout";
+import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
   title: "LE COIN BRICO - Coffres-forts et Outillage en Algérie",
-  description: "Votre site de bricolage et de sécurité en Algérie. Coffres-forts, extracteurs et outillage professionnel.",
+  description: "Votre site de bricolage et de sécurité en Algérie.",
 };
 
 export default function RootLayout({
@@ -17,9 +17,9 @@ export default function RootLayout({
     <html lang="fr">
       <body>
         <TranslationProvider>
-          <PublicLayout>
+          <ClientLayout>
             {children}
-          </PublicLayout>
+          </ClientLayout>
         </TranslationProvider>
       </body>
     </html>
