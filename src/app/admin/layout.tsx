@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Menu, X } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -63,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
@@ -74,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               >
                 <Icon size={20} />
                 <span className="font-medium">{item.name}</span>
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -112,7 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (
-                  <a
+                  <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
@@ -124,7 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   >
                     <Icon size={20} />
                     <span className="font-medium">{item.name}</span>
-                  </a>
+                  </Link>
                 );
               })}
             </nav>
