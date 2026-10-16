@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Truck, Shield, CreditCard, Headphones, Search, User, Heart, ShoppingCart, Phone, Menu } from 'lucide-react';
+import Link from 'next/link'; // ✅ AJOUTÉ pour la navigation Next.js
 import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
 
@@ -35,17 +36,6 @@ export default function Home() {
       console.error('Erreur chargement paramètres:', error);
     }
   };
-
-  const categories = [
-    { name: t('header.safes'), icon: '', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop', lien: '/coffres-forts' },
-    { name: 'Quincaillerie', icon: '🔩', image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?w=300&h=200&fit=crop', lien: '#' },
-    { name: 'Sécurité', icon: '🛡️', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=300&h=200&fit=crop', lien: '#' },
-    { name: t('header.extractors'), icon: '⚡', image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=300&h=200&fit=crop', lien: '/extracteur' },
-    { name: 'Postes à souder', icon: '🔥', image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=300&h=200&fit=crop', lien: '/postes-a-souder' },
-    { name: 'Chargeur batterie', icon: '🔋', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=200&fit=crop', lien: '/chargeur-batterie' },
-    { name: 'Visserie', icon: '🔧', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&h=200&fit=crop', lien: '#' },
-    { name: 'Consommables', icon: '📦', image: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=300&h=200&fit=crop', lien: '#' },
-  ];
 
   return (
     <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -92,9 +82,25 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className="flex flex-col items-center gap-1 hover:text-[#F7941D]"><User size={24} /><span className="text-xs">{t('header.account')}</span></button>
-              <button className="flex flex-col items-center gap-1 hover:text-[#F7941D] relative"><Heart size={24} /><span className="absolute -top-2 -right-2 bg-[#F7941D] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span><span className="text-xs">{t('header.favorites')}</span></button>
-              <button className="flex flex-col items-center gap-1 hover:text-[#F7941D] relative"><ShoppingCart size={24} /><span className="absolute -top-2 -right-2 bg-[#F7941D] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span><span className="text-xs">{t('header.cart')}</span></button>
+              {/* ✅ PROBLÈME #9 CORRIGÉ : Lien vers /login au lieu d'un bouton vide */}
+              <Link href="/login" className="flex flex-col items-center gap-1 hover:text-[#F7941D]">
+                <User size={24} />
+                <span className="text-xs">{t('header.account')}</span>
+              </Link>
+              
+              {/* ✅ PROBLÈME #10 CORRIGÉ : Lien vers /wishlist */}
+              <Link href="/wishlist" className="flex flex-col items-center gap-1 hover:text-[#F7941D] relative">
+                <Heart size={24} />
+                <span className="absolute -top-2 -right-2 bg-[#F7941D] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                <span className="text-xs">{t('header.favorites')}</span>
+              </Link>
+              
+              {/* ✅ PROBLÈME #10 CORRIGÉ : Lien vers /cart */}
+              <Link href="/cart" className="flex flex-col items-center gap-1 hover:text-[#F7941D] relative">
+                <ShoppingCart size={24} />
+                <span className="absolute -top-2 -right-2 bg-[#F7941D] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                <span className="text-xs">{t('header.cart')}</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -102,14 +108,19 @@ export default function Home() {
         <nav className="bg-[#121212] text-white">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-6 py-3 overflow-x-auto">
-              <button className="bg-[#F7941D] hover:bg-orange-600 px-6 py-2 rounded-lg flex items-center gap-2 font-medium whitespace-nowrap"><Menu size={20} />{t('header.categories')}</button>
+              {/* ✅ PROBLÈME #8 CORRIGÉ : Lien vers /categories au lieu d'un bouton sans action */}
+              <Link href="/categories" className="bg-[#F7941D] hover:bg-orange-600 px-6 py-2 rounded-lg flex items-center gap-2 font-medium whitespace-nowrap">
+                <Menu size={20} />
+                {t('header.categories')}
+              </Link>
               <ul className="flex items-center gap-6">
-                <li><a href="/" className="hover:text-[#F7941D] whitespace-nowrap font-medium border-b-2 border-[#F7941D] pb-1">{t('header.home')}</a></li>
-                <li><a href="/coffres-forts" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.safes')}</a></li>
-                <li><a href="/extracteur" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.extractors')}</a></li>
-                <li><a href="/postes-a-souder" className="hover:text-[#F7941D] whitespace-nowrap">Postes à souder</a></li>
-                <li><a href="/chargeur-batterie" className="hover:text-[#F7941D] whitespace-nowrap">Chargeur batterie</a></li>
-                <li><a href="/contact" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.contact')}</a></li>
+                <li><Link href="/" className="hover:text-[#F7941D] whitespace-nowrap font-medium border-b-2 border-[#F7941D] pb-1">{t('header.home')}</Link></li>
+                <li><Link href="/coffres-forts" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.safes')}</Link></li>
+                <li><Link href="/extracteur" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.extractors')}</Link></li>
+                <li><Link href="/postes-a-souder" className="hover:text-[#F7941D] whitespace-nowrap">Postes à souder</Link></li>
+                <li><Link href="/chargeur-batterie" className="hover:text-[#F7941D] whitespace-nowrap">Chargeur batterie</Link></li>
+                {/* ✅ PROBLÈME #7 CORRIGÉ : Utilisation de Link pour une navigation fluide vers /contact */}
+                <li><Link href="/contact" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.contact')}</Link></li>
               </ul>
             </div>
           </div>
@@ -123,7 +134,7 @@ export default function Home() {
           <div className="max-w-2xl">
             <h1 className="text-5xl md:text-6xl font-bold mb-4">{t('home.title')}<br /><span className="text-[#F7941D]">{t('home.subtitle')}</span></h1>
             <p className="text-xl mb-8 text-gray-300">{t('home.description')}</p>
-            <a href="/coffres-forts" className="inline-block bg-[#F7941D] hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-lg text-lg transition-colors">{t('home.cta')}</a>
+            <Link href="/coffres-forts" className="inline-block bg-[#F7941D] hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-lg text-lg transition-colors">{t('home.cta')}</Link>
           </div>
         </div>
       </section>
@@ -140,20 +151,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CATEGORIES */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#121212] mb-8 text-center md:text-left">{t('home.categories')}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categories.map((cat) => (
-              <a key={cat.name} href={cat.lien} className="bg-white rounded-xl overflow-hidden hover:shadow-lg cursor-pointer border border-gray-100 transition-shadow">
-                <div className="h-32 overflow-hidden"><img src={cat.image} alt={cat.name} className="w-full h-full object-cover" /></div>
-                <div className="p-4 text-center"><div className="text-3xl mb-2">{cat.icon}</div><h3 className="font-bold text-[#121212] text-sm">{cat.name}</h3></div>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ✅ PROBLÈME #6 CORRIGÉ : Section "Nos catégories principales" SUPPRIMÉE comme demandé */}
 
       {/* HOW IT WORKS */}
       <section className="py-16 bg-white">
@@ -184,15 +182,15 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">{t('footer.navigation')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="/" className="hover:text-[#F7941D]">{t('header.home')}</a></li>
-                <li><a href="/coffres-forts" className="hover:text-[#F7941D]">{t('header.safes')}</a></li>
-                <li><a href="/extracteur" className="hover:text-[#F7941D]">{t('header.extractors')}</a></li>
-                <li><a href="/postes-a-souder" className="hover:text-[#F7941D]">Postes à souder</a></li>
-                <li><a href="/chargeur-batterie" className="hover:text-[#F7941D]">Chargeur batterie</a></li>
-                <li><a href="/contact" className="hover:text-[#F7941D]">{t('header.contact')}</a></li>
+                <li><Link href="/" className="hover:text-[#F7941D]">{t('header.home')}</Link></li>
+                <li><Link href="/coffres-forts" className="hover:text-[#F7941D]">{t('header.safes')}</Link></li>
+                <li><Link href="/extracteur" className="hover:text-[#F7941D]">{t('header.extractors')}</Link></li>
+                <li><Link href="/postes-a-souder" className="hover:text-[#F7941D]">Postes à souder</Link></li>
+                <li><Link href="/chargeur-batterie" className="hover:text-[#F7941D]">Chargeur batterie</Link></li>
+                <li><Link href="/contact" className="hover:text-[#F7941D]">{t('header.contact')}</Link></li>
               </ul>
             </div>
-            <div><h4 className="font-bold mb-4">{t('footer.info')}</h4><ul className="space-y-2 text-gray-400"><li><a href="#" className="hover:text-[#F7941D]">{t('footer.shipping')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.payment')}</a></li><li><a href="#" className="hover:text-[#F7941D]">{t('footer.contact')}</a></li></ul></div>
+            <div><h4 className="font-bold mb-4">{t('footer.info')}</h4><ul className="space-y-2 text-gray-400"><li><Link href="#" className="hover:text-[#F7941D]">{t('footer.shipping')}</Link></li><li><Link href="#" className="hover:text-[#F7941D]">{t('footer.payment')}</Link></li><li><Link href="#" className="hover:text-[#F7941D]">{t('footer.contact')}</Link></li></ul></div>
             <div><h4 className="font-bold mb-4">{t('footer.contact')}</h4><p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400">📍 {t('footer.location')}</p></div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"><p>© 2026 LE COIN BRICO. {t('footer.rights')}</p></div>
