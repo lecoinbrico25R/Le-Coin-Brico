@@ -35,7 +35,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const menuItems = [
-    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    // ✅ PROBLÈME #5bis CORRIGÉ : Lien explicite vers /admin/dashboard
+    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
     { name: 'Produits', href: '/admin/produits', icon: Package },
     { name: 'Clients', href: '/admin/clients', icon: Users },
