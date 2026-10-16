@@ -63,7 +63,6 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Header Simplifié */}
       <header className="bg-[#121212] text-white p-4 sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
@@ -79,7 +78,6 @@ export default function ProductDetail() {
       </header>
 
       <div className="flex-grow container mx-auto px-4 py-12">
-        {/* Fil d'ariane */}
         <div className="text-sm text-gray-500 mb-6 flex items-center gap-2">
           <Link href="/" className="hover:text-[#F7941D]">Accueil</Link> 
           <span>/</span>
@@ -89,8 +87,6 @@ export default function ProductDetail() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
-          
-          {/* Galerie Photos */}
           <div className="space-y-4">
             <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center border border-gray-200">
               <img src={selectedImage} alt={product.name} className="w-full h-full object-contain p-4" />
@@ -110,7 +106,6 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Informations Produit */}
           <div className="flex flex-col">
             <h1 className="text-3xl md:text-4xl font-bold text-[#121212] mb-4 leading-tight">
               {language === 'ar' && product.name_ar ? product.name_ar : product.name}
@@ -150,7 +145,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Footer Simplifié */}
       <footer className="bg-[#121212] text-white py-8 mt-auto">
         <div className="container mx-auto px-4 text-center text-sm">
           <p>© 2026 LE COIN BRICO. {t('footer.rights') || 'Tous droits réservés'}</p>
