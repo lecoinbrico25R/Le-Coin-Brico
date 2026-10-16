@@ -1,0 +1,17 @@
+{
+  "/   chargeur-batterie/page": "/   chargeur-batterie",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/clients/page": "/admin/clients",
+  "/admin/commandes/page": "/admin/commandes",
+  "/admin/login/page": "/admin/login",
+  "/admin/page": "/admin",
+  "/admin/parametres/page": "/admin/parametres",
+  "/admin/produits/page": "/admin/produits",
+  "/coffres-forts/page": "/coffres-forts",
+  "/contact/page": "/contact",
+  "/extracteur/page": "/extracteur",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/",
+  "/produit/[id]/page": "/produit/[id]"
+}

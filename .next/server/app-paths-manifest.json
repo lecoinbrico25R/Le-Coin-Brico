@@ -1,0 +1,17 @@
+{
+  "/   chargeur-batterie/page": "app/   chargeur-batterie/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/clients/page": "app/admin/clients/page.js",
+  "/admin/commandes/page": "app/admin/commandes/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/parametres/page": "app/admin/parametres/page.js",
+  "/admin/produits/page": "app/admin/produits/page.js",
+  "/coffres-forts/page": "app/coffres-forts/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/extracteur/page": "app/extracteur/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js",
+  "/produit/[id]/page": "app/produit/[id]/page.js"
+}
