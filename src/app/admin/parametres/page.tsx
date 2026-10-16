@@ -14,7 +14,7 @@ export default function AdminParametres() {
     phone: '',
     email: '',
     address: '',
-    hours: ''
+    opening_hours: ''
   });
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function AdminParametres() {
           phone: data.phone || '',
           email: data.email || '',
           address: data.address || '',
-          hours: data.hours || ''
+          opening_hours: data.opening_hours || ''
         });
       }
     } catch (error) {
@@ -49,7 +49,6 @@ export default function AdminParametres() {
     setSaving(true);
     setMessage('');
     try {
-      // On utilise upsert pour créer ou mettre à jour la ligne avec l'ID 1
       const { error } = await supabase
         .from('site_settings')
         .upsert({ id: 1, ...formData }, { onConflict: 'id' });
@@ -140,8 +139,8 @@ export default function AdminParametres() {
             </label>
             <input
               type="text"
-              value={formData.hours}
-              onChange={(e) => setFormData({...formData, hours: e.target.value})}
+              value={formData.opening_hours}
+              onChange={(e) => setFormData({...formData, opening_hours: e.target.value})}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F7941D] focus:border-transparent outline-none"
               placeholder="Ex: Sam - Jeu: 08h00 - 18h00"
             />
