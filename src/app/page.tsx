@@ -73,7 +73,7 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* HERO AVEC TON IMAGE */}
+      {/* HERO AVEC TON IMAGE ET TON SLOGAN */}
       <section 
         className="relative text-white overflow-hidden"
         style={{ 
@@ -85,18 +85,18 @@ export default function HomePage() {
         }}
       >
         {/* Overlay sombre pour lisibilité du texte */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent"></div>
         
         <div className="relative container mx-auto px-4 py-20 sm:py-24 md:py-32 flex flex-col items-start justify-center min-h-[400px]">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-3 sm:mb-4 leading-tight uppercase">
-            <span className="block text-white">Coffres Forts</span>
-            <span className="block text-[#F7941D] mt-2">Haute Sécurité</span>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 leading-tight">
+            <span className="block text-white">LE COIN BRICO</span>
+            <span className="block text-[#F7941D] mt-2">La puissance entre vos mains</span>
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-200 mb-6 sm:mb-8 max-w-xl">
-            Protégez ce qui compte le plus pour vous.
+            Découvrez notre sélection d'outils et de coffres-forts de haute qualité.
           </p>
           <Link href="/coffres-forts" className="bg-[#F7941D] hover:bg-orange-600 active:bg-orange-700 text-white font-bold py-4 px-8 rounded-lg transition-colors inline-block text-base sm:text-lg shadow-2xl uppercase tracking-wide">
-            Découvrir maintenant
+            Voir nos produits
           </Link>
         </div>
       </section>
