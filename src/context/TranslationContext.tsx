@@ -20,8 +20,8 @@ const translations = {
       cart: "Panier",
       categories: "Toutes catégories",
       home: "Accueil",
-      safes: "Coffres forts",
-      extractors: "Extracteur",
+      safes: "Coffres-forts",
+      extractors: "Extracteur d'air",
       contact: "Contact",
       searchPlaceholder: "Rechercher un produit...",
       allCategories: "Toutes catégories"
@@ -32,6 +32,8 @@ const translations = {
       description: "Découvrez notre sélection de coffres-forts et extracteurs de haute qualité.",
       cta: "Voir nos produits",
       categories: "Nos catégories principales",
+      featured: "Nos produits récents",
+      viewAll: "Voir tous les produits",
       howItWorks: "Comment ça marche ?",
       step1: "Choisissez votre produit",
       step1Desc: "Parcourez notre catalogue.",
@@ -51,6 +53,13 @@ const translations = {
         support: "Service client",
         supportDesc: "7j/7 à votre écoute"
       }
+    },
+    products: {
+      view: "Voir le produit",
+      filters: "Filtres",
+      type: "Type",
+      price: "Prix",
+      found: "produits trouvés"
     },
     footer: {
       company: "LE COIN BRICO",
@@ -91,7 +100,7 @@ const translations = {
       error: "Erreur lors de l'envoi"
     },
     safes: { title: "Nos Coffres-forts", subtitle: "Sécurité maximale" },
-    extractors: { title: "Nos Extracteurs", subtitle: "Outils professionnels" }
+    extractors: { title: "Nos Extracteurs d'air", subtitle: "Outils professionnels" }
   },
   ar: {
     header: {
@@ -103,7 +112,7 @@ const translations = {
       categories: "جميع الفئات",
       home: "الرئيسية",
       safes: "خزائن",
-      extractors: "أجهزة الاستخراج",
+      extractors: "أجهزة استخراج الهواء",
       contact: "اتصل بنا",
       searchPlaceholder: "ابحث عن منتج...",
       allCategories: "جميع الفئات"
@@ -111,9 +120,11 @@ const translations = {
     home: {
       title: "القوة",
       subtitle: "بين يديك",
-      description: "اكتشف مجموعتنا من الخزائن وأجهزة الاستخراج عالية الجودة.",
+      description: "اكتشف مجموعتنا من الخزائن وأجهزة استخراج الهواء عالية الجودة.",
       cta: "شاهد منتجاتنا",
       categories: "الفئات الرئيسية",
+      featured: "منتجاتنا الحديثة",
+      viewAll: "عرض جميع المنتجات",
       howItWorks: "كيف يعمل؟",
       step1: "اختر منتجك",
       step1Desc: "تصفح كتالوجنا.",
@@ -133,6 +144,13 @@ const translations = {
         support: "خدمة العملاء",
         supportDesc: "7 أيام في الأسبوع"
       }
+    },
+    products: {
+      view: "عرض المنتج",
+      filters: "تصفية",
+      type: "النوع",
+      price: "السعر",
+      found: "منتجات وجدت"
     },
     footer: {
       company: "LE COIN BRICO",
@@ -173,7 +191,7 @@ const translations = {
       error: "خطأ في الإرسال"
     },
     safes: { title: "خزائننا", subtitle: "أقصى أمان" },
-    extractors: { title: "أجهزة الاستخراج", subtitle: "أدوات مهنية" }
+    extractors: { title: "أجهزة استخراج الهواء", subtitle: "أدوات مهنية" }
   }
 };
 
