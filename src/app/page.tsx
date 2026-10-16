@@ -5,9 +5,13 @@ import Link from 'next/link';
 import { Truck, Shield, CreditCard, Headphones, Search, User, Heart, ShoppingCart, Phone, Menu, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 
 export default function Home() {
   const { language, setLanguage, t } = useTranslation();
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [siteSettings, setSiteSettings] = useState({ phone: '0560143657', email: 'le.coin.brico25@gmail.com' });
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -81,11 +85,11 @@ export default function Home() {
         <nav className="bg-[#121212] text-white">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-6 py-3 overflow-x-auto">
-              <Link href="/coffres-forts" className="bg-[#F7941D] hover:bg-orange-600 px-6 py-2 rounded-lg flex items-center gap-2 font-medium whitespace-nowrap"><Menu size={20} /> {t('header.categories') || 'Toutes catégories'}</Link>
+              <Link href="/categories" className="bg-[#F7941D] hover:bg-orange-600 px-6 py-2 rounded-lg flex items-center gap-2 font-medium whitespace-nowrap"><Menu size={20} /> {t('header.categories') || 'Toutes catégories'}</Link>
               <ul className="flex items-center gap-6">
                 <li><Link href="/" className="hover:text-[#F7941D] whitespace-nowrap font-medium border-b-2 border-[#F7941D] pb-1">{t('header.home') || 'Accueil'}</Link></li>
                 <li><Link href="/coffres-forts" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.safes') || 'Coffres-forts'}</Link></li>
-                <li><Link href="/extracteur" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.extractors') || 'Extracteurs'}</Link></li>
+                <li><Link href="/extracteur" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.extractors') || 'Extracteur d\'air'}</Link></li>
                 <li><Link href="/postes-a-souder" className="hover:text-[#F7941D] whitespace-nowrap">Postes à souder</Link></li>
                 <li><Link href="/chargeur-batterie" className="hover:text-[#F7941D] whitespace-nowrap">Chargeur batterie</Link></li>
                 <li><Link href="/contact" className="hover:text-[#F7941D] whitespace-nowrap">{t('header.contact') || 'Contact'}</Link></li>
@@ -117,26 +121,35 @@ export default function Home() {
             <p className="text-center text-gray-500 py-10">Aucun produit disponible pour le moment.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {recentProducts.map((produit) => (
-                <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-shadow">
-                  <div className="h-48 bg-gray-100">
-                    <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-[#121212] mb-2 line-clamp-2">{language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}</h3>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl font-bold text-[#F7941D]">{produit.price?.toLocaleString()} DA</span>
+              {recentProducts.map((produit) => {
+                const inWishlist = isInWishlist(produit.id);
+                return (
+                  <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-shadow flex flex-col">
+                    <div className="h-48 bg-gray-100 relative group">
+                      <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover" />
                     </div>
-                    <Link href={`/produit/${produit.id}`} className="block w-full bg-[#121212] hover:bg-[#F7941D] text-white font-semibold py-2 rounded-lg text-center transition-colors">
-                      {t('products.view') || 'Voir le produit'}
-                    </Link>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3 className="font-bold text-[#121212] mb-2 line-clamp-2">{language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}</h3>
+                      <div className="flex items-center gap-2 mb-4 mt-auto">
+                        <span className="text-xl font-bold text-[#F7941D]">{produit.price?.toLocaleString()} DA</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => addToCart({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className="flex-1 bg-[#121212] hover:bg-[#F7941D] text-white font-semibold py-2 rounded-lg text-center transition-colors flex items-center justify-center gap-1 text-sm">
+                          <ShoppingCart size={16} /> Ajouter
+                        </button>
+                        <button onClick={() => inWishlist ? removeFromWishlist(produit.id) : addToWishlist({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className={`p-2 border rounded-lg transition-colors ${inWishlist ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D]'}`}>
+                          <Heart size={16} fill={inWishlist ? "currentColor" : "none"} />
+                        </button>
+                      </div>
+                      <Link href={`/produit/${produit.id}`} className="block w-full mt-2 text-center text-xs text-gray-500 hover:text-[#F7941D]">Voir les détails</Link>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <div className="text-center mt-8">
-            <Link href="/coffres-forts" className="inline-block border-2 border-[#F7941D] text-[#F7941D] hover:bg-[#F7941D] hover:text-white font-bold px-8 py-3 rounded-lg transition-colors">
+            <Link href="/categories" className="inline-block border-2 border-[#F7941D] text-[#F7941D] hover:bg-[#F7941D] hover:text-white font-bold px-8 py-3 rounded-lg transition-colors">
               {t('home.viewAll') || 'Voir tous les produits'}
             </Link>
           </div>
@@ -162,7 +175,7 @@ export default function Home() {
             <div><h3 className="font-bold text-xl mb-4">{t('footer.company') || 'LE COIN BRICO'}</h3><p className="text-gray-400">{t('footer.slogan') || 'La puissance entre vos mains'}</p></div>
             <div><h4 className="font-bold mb-4">{t('footer.navigation') || 'Navigation'}</h4><ul className="space-y-2 text-gray-400"><li><Link href="/" className="hover:text-[#F7941D]">{t('header.home') || 'Accueil'}</Link></li><li><Link href="/coffres-forts" className="hover:text-[#F7941D]">{t('header.safes') || 'Coffres-forts'}</Link></li><li><Link href="/contact" className="hover:text-[#F7941D]">{t('header.contact') || 'Contact'}</Link></li></ul></div>
             <div><h4 className="font-bold mb-4">{t('footer.info') || 'Informations'}</h4><ul className="space-y-2 text-gray-400"><li><Link href="#" className="hover:text-[#F7941D]">{t('footer.shipping') || 'Livraison'}</Link></li><li><Link href="#" className="hover:text-[#F7941D]">{t('footer.payment') || 'Paiement'}</Link></li></ul></div>
-            <div><h4 className="font-bold mb-4">{t('footer.contact') || 'Contact'}</h4><p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400">📍 {t('footer.location') || 'Algérie'}</p></div>
+            <div><h4 className="font-bold mb-4">{t('footer.contact') || 'Contact'}</h4><p className="text-gray-400 mb-2">📞 {siteSettings.phone}</p><p className="text-gray-400 mb-2">✉️ {siteSettings.email}</p><p className="text-gray-400"> {t('footer.location') || 'Algérie'}</p></div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"><p>© 2026 LE COIN BRICO. {t('footer.rights') || 'Tous droits réservés'}</p></div>
         </div>

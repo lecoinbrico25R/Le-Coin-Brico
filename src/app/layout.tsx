@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { TranslationProvider } from "@/context/TranslationContext";
+import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 
 export const metadata: Metadata = {
   title: "LE COIN BRICO - Coffres-forts et Outillage en Algérie",
@@ -16,7 +18,11 @@ export default function RootLayout({
     <html lang="fr">
       <body>
         <TranslationProvider>
-          {children}
+          <CartProvider>
+            <WishlistProvider>
+              {children}
+            </WishlistProvider>
+          </CartProvider>
         </TranslationProvider>
       </body>
     </html>

@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Zap, Heart, Loader2 } from 'lucide-react';
+import { Zap, Heart, ShoppingCart, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 
 export default function PostesASouderPage() {
   const { language, t } = useTranslation();
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +71,7 @@ export default function PostesASouderPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <p className="text-gray-600"><strong>{products.length}</strong> produits trouvés</p>
+          <p className="text-gray-600"><strong>{products.length}</strong> {t('products.found') || 'produits trouvés'}</p>
         </div>
 
         {loading ? (
@@ -81,27 +85,30 @@ export default function PostesASouderPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((produit) => (
-              <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden">
-                <div className="h-48 bg-gray-100">
-                  <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-[#121212] mb-2">{language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}</h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl font-bold text-[#F7941D]">{produit.price?.toLocaleString()} DA</span>
+            {products.map((produit) => {
+              const inWishlist = isInWishlist(produit.id);
+              return (
+                <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                  <div className="h-48 bg-gray-100">
+                    <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex gap-2">
-                    <Link href={`/produit/${produit.id}`} className="flex-1 bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg text-center">
-                      {t('products.view') || 'Voir le produit'}
-                    </Link>
-                    <button className="px-4 py-3 border border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D] rounded-lg">
-                      <Heart size={20} />
-                    </button>
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h3 className="font-bold text-[#121212] mb-2 line-clamp-2">{language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}</h3>
+                    <div className="flex items-center gap-2 mb-4 mt-auto">
+                      <span className="text-2xl font-bold text-[#F7941D]">{produit.price?.toLocaleString()} DA</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => addToCart({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className="flex-1 bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg text-center transition-colors flex items-center justify-center gap-1">
+                        <ShoppingCart size={16} /> {t('products.view') || 'Ajouter'}
+                      </button>
+                      <button onClick={() => inWishlist ? removeFromWishlist(produit.id) : addToWishlist({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className={`p-3 border rounded-lg transition-colors ${inWishlist ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D]'}`}>
+                        <Heart size={20} fill={inWishlist ? "currentColor" : "none"} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
