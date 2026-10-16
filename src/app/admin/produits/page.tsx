@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit, Trash2, Save, X, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Package, Upload } from 'lucide-react';
 
 interface Product {
   id: number;
   name: string;
+  name_ar?: string;
   description: string;
+  description_ar?: string;
   price: number;
   category: string;
   image: string;
@@ -23,10 +25,14 @@ export default function AdminProduits() {
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
+    name_ar: '',
     description: '',
+    description_ar: '',
     price: '',
     category: 'coffres-forts',
     image: '',
@@ -54,7 +60,7 @@ export default function AdminProduits() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', price: '', category: 'coffres-forts', image: '', stock: '' });
+    setFormData({ name: '', name_ar: '', description: '', description_ar: '', price: '', category: 'coffres-forts', image: '', stock: '' });
     setEditingId(null);
     setShowForm(false);
   };
@@ -62,7 +68,9 @@ export default function AdminProduits() {
   const handleEdit = (product: Product) => {
     setFormData({
       name: product.name,
+      name_ar: product.name_ar || '',
       description: product.description || '',
+      description_ar: product.description_ar || '',
       price: product.price.toString(),
       category: product.category,
       image: product.image || '',
@@ -70,6 +78,65 @@ export default function AdminProduits() {
     });
     setEditingId(product.id);
     setShowForm(true);
+  };
+
+  // ✅ PROBLÈME #2 CORRIGÉ : Upload d'image avec drag & drop
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+    
+    // Vérifier le type de fichier
+    if (!file.type.startsWith('image/')) {
+      showMessage('Veuillez sélectionner une image', 'error');
+      return;
+    }
+
+    // Vérifier la taille (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage('L\'image ne doit pas dépasser 5MB', 'error');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Créer un nom de fichier unique
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
+      // Upload vers Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('products') // ⚠️ Assure-toi d'avoir créé un bucket "products" dans Supabase
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Récupérer l'URL publique
+      const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+      const imageUrl = data.publicUrl;
+
+      setFormData({ ...formData, image: imageUrl });
+      showMessage('Image uploadée avec succès !', 'success');
+    } catch (error) {
+      console.error('Erreur upload image:', error);
+      showMessage('Erreur lors de l\'upload de l\'image', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleImageUpload(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageUpload(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
   };
 
   const handleSave = async () => {
@@ -80,7 +147,9 @@ export default function AdminProduits() {
     try {
       const productData = {
         name: formData.name,
+        name_ar: formData.name_ar,
         description: formData.description,
+        description_ar: formData.description_ar,
         price: parseFloat(formData.price),
         category: formData.category,
         image: formData.image,
@@ -147,9 +216,15 @@ export default function AdminProduits() {
               <button onClick={resetForm} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Nom en Français */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit (Français) *</label>
                 <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: Coffre-fort mural 40L" />
+              </div>
+              {/* ✅ PROBLÈME #3 CORRIGÉ : Nom en Arabe */}
+              <div dir="rtl">
+                <label className="block text-sm font-medium text-gray-700 mb-1">اسم المنتج (بالعربية)</label>
+                <input type="text" value={formData.name_ar} onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="مثال: خزنة حائط 40 لتر" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Prix (DA) *</label>
@@ -159,21 +234,56 @@ export default function AdminProduits() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie *</label>
                 <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]">
                   <option value="coffres-forts">Coffres-forts</option>
-                  <option value="extracteur">Extracteur</option>
+                  <option value="extracteur">Extracteur d'air</option>
                   <option value="postes-a-souder">Postes à souder</option>
+                  {/* ✅ PROBLÈME #1 CORRIGÉ : Ajout de la catégorie chargeur-batterie */}
+                  <option value="chargeur-batterie">Chargeur de batterie</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
                 <input type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: 10" />
               </div>
+              {/* ✅ PROBLÈME #2 CORRIGÉ : Zone de drag & drop pour l'image */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Chemin de l'image</label>
-                <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: /images/produits/coffre-mural.jpg" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image du produit</label>
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#F7941D] transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {formData.image ? (
+                    <div className="space-y-2">
+                      <img src={formData.image} alt="Aperçu" className="mx-auto max-h-40 rounded-lg" />
+                      <p className="text-sm text-gray-500">Cliquez ou glissez une nouvelle image</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="mx-auto text-gray-400" size={48} />
+                      <p className="text-gray-500">Glissez-déposez une image ici ou cliquez pour sélectionner</p>
+                      <p className="text-xs text-gray-400">PNG, JPG jusqu'à 5MB</p>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+                {uploading && <p className="text-sm text-[#F7941D] mt-2">Upload en cours...</p>}
               </div>
+              {/* Description en Français */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Français)</label>
                 <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Description du produit..." />
+              </div>
+              {/* ✅ PROBLÈME #3 CORRIGÉ : Description en Arabe */}
+              <div className="md:col-span-2" dir="rtl">
+                <label className="block text-sm font-medium text-gray-700 mb-1">الوصف (بالعربية)</label>
+                <textarea value={formData.description_ar} onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="وصف المنتج..." />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-4">
