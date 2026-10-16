@@ -63,15 +63,15 @@ export default function PostesASouderPage() {
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4 flex items-center gap-4">
             <Zap size={48} className="text-[#F7941D]" />
-            {t('welding.title') || 'Nos Postes à souder'}
+            Nos Postes à souder
           </h1>
-          <p className="text-xl text-gray-300">{t('welding.subtitle') || 'Outils professionnels'}</p>
+          <p className="text-xl text-gray-300">Outils professionnels</p>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <p className="text-gray-600"><strong>{products.length}</strong> {t('products.found') || 'produits trouvés'}</p>
+          <p className="text-gray-600"><strong>{products.length}</strong> produits trouvés</p>
         </div>
 
         {loading ? (
@@ -88,12 +88,10 @@ export default function PostesASouderPage() {
               const inWishlist = isInWishlist(produit.id);
               return (
                 <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden flex flex-col">
-                  {/* ✅ LIEN SUR L'IMAGE */}
                   <Link href={`/produit/${produit.id}`} className="h-48 bg-gray-100 block">
                     <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                   </Link>
                   <div className="p-4 flex flex-col flex-grow">
-                    {/* ✅ LIEN SUR LE TITRE */}
                     <Link href={`/produit/${produit.id}`} className="font-bold text-[#121212] mb-2 line-clamp-2 hover:text-[#F7941D] transition-colors">
                       {language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}
                     </Link>
@@ -102,9 +100,8 @@ export default function PostesASouderPage() {
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => addToCart({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className="flex-1 bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg text-center transition-colors flex items-center justify-center gap-1">
-                        <ShoppingCart size={16} /> {t('products.view') || 'Ajouter'}
+                        <ShoppingCart size={16} /> Ajouter
                       </button>
-                      {/* ✅ BOUTON ŒIL POUR VOIR LES DÉTAILS */}
                       <Link href={`/produit/${produit.id}`} className="p-3 border border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D] rounded-lg transition-colors flex items-center justify-center" title="Voir les détails">
                         <Eye size={20} />
                       </Link>
