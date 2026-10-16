@@ -7,6 +7,10 @@ import { useTranslation } from '@/context/TranslationContext';
 export default function LoginPage() {
   const { language, t } = useTranslation();
 
+  const handleClick = () => {
+    alert("L'espace client sera bientôt disponible !");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="bg-white p-8 rounded-xl shadow-lg border w-full max-w-md">
@@ -18,7 +22,7 @@ export default function LoginPage() {
           <p className="text-gray-500 mt-2">Connectez-vous pour accéder à votre espace</p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleClick(); }}>
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
             <div className="relative">
@@ -33,7 +37,7 @@ export default function LoginPage() {
               <input type="password" placeholder="••••••••" className="w-full pl-10 p-3 border rounded-lg focus:ring-2 focus:ring-[#F7941D] outline-none" />
             </div>
           </div>
-          <button type="button" className="w-full bg-[#F7941D] hover:bg-orange-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+          <button type="submit" className="w-full bg-[#F7941D] hover:bg-orange-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
             <LogIn size={20} />
             Se connecter
           </button>
