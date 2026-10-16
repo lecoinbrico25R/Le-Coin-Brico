@@ -43,7 +43,7 @@ export default function AdminProduits() {
 
   const loadProducts = async () => {
     try {
-      const { data, error } = await supabase.from('products').select('*').order('id', { ascending: true });
+      const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
@@ -56,7 +56,7 @@ export default function AdminProduits() {
   const showMessage = (msg: string, type: 'success' | 'error') => {
     setMessage(msg);
     setMessageType(type);
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(''), 4000);
   };
 
   const resetForm = () => {
@@ -80,17 +80,14 @@ export default function AdminProduits() {
     setShowForm(true);
   };
 
-  // ✅ PROBLÈME #2 CORRIGÉ : Upload d'image avec drag & drop
   const handleImageUpload = async (file: File) => {
-    if (!file) return;
+    console.log("Tentative d'upload du fichier :", file.name, file.size);
     
-    // Vérifier le type de fichier
     if (!file.type.startsWith('image/')) {
-      showMessage('Veuillez sélectionner une image', 'error');
+      showMessage('Veuillez sélectionner une image valide (JPG, PNG)', 'error');
       return;
     }
 
-    // Vérifier la taille (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       showMessage('L\'image ne doit pas dépasser 5MB', 'error');
       return;
@@ -98,27 +95,26 @@ export default function AdminProduits() {
 
     setUploading(true);
     try {
-      // Créer un nom de fichier unique
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `products/${fileName}`;
 
-      // Upload vers Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('products') // ⚠️ Assure-toi d'avoir créé un bucket "products" dans Supabase
+      const { error: uploadError, data } = await supabase.storage
+        .from('products')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Erreur Supabase Upload:", uploadError);
+        throw uploadError;
+      }
 
-      // Récupérer l'URL publique
-      const { data } = supabase.storage.from('products').getPublicUrl(filePath);
-      const imageUrl = data.publicUrl;
-
-      setFormData({ ...formData, image: imageUrl });
+      const { data: urlData } = supabase.storage.from('products').getPublicUrl(filePath);
+      
+      setFormData(prev => ({ ...prev, image: urlData.publicUrl }));
       showMessage('Image uploadée avec succès !', 'success');
-    } catch (error) {
-      console.error('Erreur upload image:', error);
-      showMessage('Erreur lors de l\'upload de l\'image', 'error');
+    } catch (error: any) {
+      console.error('Erreur détaillée upload image:', error);
+      showMessage(`Erreur upload : ${error.message || 'Vérifiez que le bucket "products" existe et est public dans Supabase'}`, 'error');
     } finally {
       setUploading(false);
     }
@@ -127,16 +123,20 @@ export default function AdminProduits() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleImageUpload(file);
+    // Reset input value to allow selecting the same file again if needed
+    e.target.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const file = e.dataTransfer.files[0];
     if (file) handleImageUpload(file);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleSave = async () => {
@@ -155,6 +155,7 @@ export default function AdminProduits() {
         image: formData.image,
         stock: parseInt(formData.stock) || 0
       };
+      
       let error;
       if (editingId) {
         const result = await supabase.from('products').update(productData).eq('id', editingId);
@@ -163,18 +164,20 @@ export default function AdminProduits() {
         const result = await supabase.from('products').insert([productData]);
         error = result.error;
       }
+      
       if (error) throw error;
-      showMessage(editingId ? 'Produit modifié !' : 'Produit ajouté !', 'success');
+      
+      showMessage(editingId ? 'Produit modifié avec succès !' : 'Produit ajouté avec succès !', 'success');
       resetForm();
       loadProducts();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur sauvegarde:', error);
-      showMessage('Erreur lors de la sauvegarde', 'error');
+      showMessage(`Erreur : ${error.message}`, 'error');
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Supprimer ce produit ?')) return;
+    if (!confirm('Supprimer ce produit définitivement ?')) return;
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
@@ -206,22 +209,22 @@ export default function AdminProduits() {
 
       <div className="container mx-auto px-4 py-6">
         {message && (
-          <div className={`mb-4 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{message}</div>
+          <div className={`mb-4 p-4 rounded-lg font-medium ${messageType === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
+            {message}
+          </div>
         )}
 
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-[#121212]">{editingId ? 'Modifier le produit' : 'Ajouter un nouveau produit'}</h2>
               <button onClick={resetForm} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Nom en Français */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit (Français) *</label>
                 <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: Coffre-fort mural 40L" />
               </div>
-              {/* ✅ PROBLÈME #3 CORRIGÉ : Nom en Arabe */}
               <div dir="rtl">
                 <label className="block text-sm font-medium text-gray-700 mb-1">اسم المنتج (بالعربية)</label>
                 <input type="text" value={formData.name_ar} onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="مثال: خزنة حائط 40 لتر" />
@@ -236,7 +239,6 @@ export default function AdminProduits() {
                   <option value="coffres-forts">Coffres-forts</option>
                   <option value="extracteur">Extracteur d'air</option>
                   <option value="postes-a-souder">Postes à souder</option>
-                  {/* ✅ PROBLÈME #1 CORRIGÉ : Ajout de la catégorie chargeur-batterie */}
                   <option value="chargeur-batterie">Chargeur de batterie</option>
                 </select>
               </div>
@@ -244,24 +246,25 @@ export default function AdminProduits() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
                 <input type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: 10" />
               </div>
-              {/* ✅ PROBLÈME #2 CORRIGÉ : Zone de drag & drop pour l'image */}
+              
+              {/* ZONE D'UPLOAD AMÉLIORÉE */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image du produit</label>
                 <div
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#F7941D] transition-colors cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
+                  className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#F7941D] hover:bg-orange-50 transition-all cursor-pointer group"
                 >
                   {formData.image ? (
-                    <div className="space-y-2">
-                      <img src={formData.image} alt="Aperçu" className="mx-auto max-h-40 rounded-lg" />
-                      <p className="text-sm text-gray-500">Cliquez ou glissez une nouvelle image</p>
+                    <div className="space-y-3">
+                      <img src={formData.image} alt="Aperçu" className="mx-auto max-h-48 rounded-lg shadow-sm" />
+                      <p className="text-sm text-[#F7941D] font-medium">Cliquez ou glissez une nouvelle image pour la remplacer</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <Upload className="mx-auto text-gray-400" size={48} />
-                      <p className="text-gray-500">Glissez-déposez une image ici ou cliquez pour sélectionner</p>
+                    <div className="space-y-3">
+                      <Upload className="mx-auto text-gray-400 group-hover:text-[#F7941D] transition-colors" size={48} />
+                      <p className="text-gray-600 font-medium">Glissez-déposez une image ici ou cliquez pour sélectionner</p>
                       <p className="text-xs text-gray-400">PNG, JPG jusqu'à 5MB</p>
                     </div>
                   )}
@@ -270,67 +273,71 @@ export default function AdminProduits() {
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="hidden"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                 </div>
-                {uploading && <p className="text-sm text-[#F7941D] mt-2">Upload en cours...</p>}
+                {uploading && <p className="text-sm text-[#F7941D] mt-2 font-medium animate-pulse">⏳ Upload en cours...</p>}
               </div>
-              {/* Description en Français */}
+
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description (Français)</label>
                 <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Description du produit..." />
               </div>
-              {/* ✅ PROBLÈME #3 CORRIGÉ : Description en Arabe */}
               <div className="md:col-span-2" dir="rtl">
                 <label className="block text-sm font-medium text-gray-700 mb-1">الوصف (بالعربية)</label>
                 <textarea value={formData.description_ar} onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="وصف المنتج..." />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <button onClick={resetForm} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Annuler</button>
-              <button onClick={handleSave} className="bg-[#F7941D] hover:bg-orange-600 text-white px-6 py-2 rounded-lg flex items-center gap-2">
+            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+              <button onClick={resetForm} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 font-medium">Annuler</button>
+              <button onClick={handleSave} className="bg-[#F7941D] hover:bg-orange-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium">
                 <Save size={18} /> {editingId ? 'Modifier' : 'Ajouter'}
               </button>
             </div>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h2 className="text-lg font-bold text-[#121212]">Liste des produits ({products.length})</h2>
           </div>
           {products.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">Aucun produit trouvé.</div>
+            <div className="p-12 text-center text-gray-500">
+              <Package className="mx-auto mb-3 text-gray-300" size={48} />
+              <p>Aucun produit trouvé. Commencez par en ajouter un !</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prix</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Nom</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Catégorie</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Prix</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stock</th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-500">{product.id}</td>
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-gray-500">#{product.id}</td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-[#121212]">{product.name}</div>
-                        <div className="text-xs text-gray-500 truncate max-w-xs">{product.description}</div>
+                        <div className="text-sm font-bold text-[#121212]">{product.name}</div>
+                        {product.name_ar && <div className="text-xs text-gray-500 mt-1" dir="rtl">{product.name_ar}</div>}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-[#F7941D]">{product.category}</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#F7941D] border border-orange-200">
+                          {product.category}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-bold text-[#121212]">{product.price.toLocaleString()} DA</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{product.stock}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded" title="Modifier"><Edit size={16} /></button>
-                          <button onClick={() => handleDelete(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded" title="Supprimer"><Trash2 size={16} /></button>
+                          <button onClick={() => handleEdit(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier"><Edit size={18} /></button>
+                          <button onClick={() => handleDelete(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer"><Trash2 size={18} /></button>
                         </div>
                       </td>
                     </tr>
