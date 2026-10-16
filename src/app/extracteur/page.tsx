@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Wind, Heart, ShoppingCart, Loader2 } from 'lucide-react';
+import { Wind, Heart, ShoppingCart, Loader2, Eye } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
@@ -63,15 +63,15 @@ export default function ExtracteurPage() {
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4 flex items-center gap-4">
             <Wind size={48} className="text-[#F7941D]" />
-            {t('extractors.title') || 'Nos Extracteurs d\'air'}
+            Nos Extracteurs d'air
           </h1>
-          <p className="text-xl text-gray-300">{t('extractors.subtitle') || 'Outils professionnels'}</p>
+          <p className="text-xl text-gray-300">Solutions de ventilation professionnelles</p>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <p className="text-gray-600"><strong>{products.length}</strong> {t('products.found') || 'produits trouvés'}</p>
+          <p className="text-gray-600"><strong>{products.length}</strong> produits trouvés</p>
         </div>
 
         {loading ? (
@@ -88,18 +88,23 @@ export default function ExtracteurPage() {
               const inWishlist = isInWishlist(produit.id);
               return (
                 <div key={produit.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden flex flex-col">
-                  <div className="h-48 bg-gray-100">
-                    <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover" />
-                  </div>
+                  <Link href={`/produit/${produit.id}`} className="h-48 bg-gray-100 block">
+                    <img src={produit.image || '/images/placeholder.jpg'} alt={produit.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                  </Link>
                   <div className="p-4 flex flex-col flex-grow">
-                    <h3 className="font-bold text-[#121212] mb-2 line-clamp-2">{language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}</h3>
+                    <Link href={`/produit/${produit.id}`} className="font-bold text-[#121212] mb-2 line-clamp-2 hover:text-[#F7941D] transition-colors">
+                      {language === 'ar' && produit.name_ar ? produit.name_ar : produit.name}
+                    </Link>
                     <div className="flex items-center gap-2 mb-4 mt-auto">
                       <span className="text-2xl font-bold text-[#F7941D]">{produit.price?.toLocaleString()} DA</span>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => addToCart({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className="flex-1 bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg text-center transition-colors flex items-center justify-center gap-1">
-                        <ShoppingCart size={16} /> {t('products.view') || 'Ajouter'}
+                        <ShoppingCart size={16} /> Ajouter
                       </button>
+                      <Link href={`/produit/${produit.id}`} className="p-3 border border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D] rounded-lg transition-colors flex items-center justify-center" title="Voir les détails">
+                        <Eye size={20} />
+                      </Link>
                       <button onClick={() => inWishlist ? removeFromWishlist(produit.id) : addToWishlist({ id: produit.id, name: produit.name, price: produit.price, image: produit.image })} className={`p-3 border rounded-lg transition-colors ${inWishlist ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D]'}`}>
                         <Heart size={20} fill={inWishlist ? "currentColor" : "none"} />
                       </button>
