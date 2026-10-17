@@ -1,21 +1,12 @@
 "use client";
-
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Plus, Edit, Trash2, Save, X, Package, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 interface Product {
-  id: number;
-  name: string;
-  name_ar?: string;
-  description: string;
-  description_ar?: string;
-  price: number;
-  category: string;
-  image: string;
-  images?: string[];
-  stock: number;
+  id: number; name: string; name_ar?: string; description: string; description_ar?: string;
+  price: number; category: string; image: string; images?: string[]; stock: number;
 }
 
 export default function AdminProduits() {
@@ -29,17 +20,9 @@ export default function AdminProduits() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const multipleFileInputRef = useRef<HTMLInputElement>(null);
-
   const [formData, setFormData] = useState({
-    name: '',
-    name_ar: '',
-    description: '',
-    description_ar: '',
-    price: '',
-    category: 'coffres-forts',
-    image: '',
-    images: [] as string[],
-    stock: ''
+    name: '', name_ar: '', description: '', description_ar: '', price: '',
+    category: 'coffres-forts', image: '', images: [] as string[], stock: ''
   });
 
   useEffect(() => { loadProducts(); }, []);
@@ -49,342 +32,200 @@ export default function AdminProduits() {
       const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
       if (error) throw error;
       setProducts(data || []);
-    } catch (error) {
-      console.error('Erreur chargement produits:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
   const showMessage = (msg: string, type: 'success' | 'error') => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(''), 4000);
+    setMessage(msg); setMessageType(type); setTimeout(() => setMessage(''), 4000);
   };
 
   const resetForm = () => {
     setFormData({ name: '', name_ar: '', description: '', description_ar: '', price: '', category: 'coffres-forts', image: '', images: [], stock: '' });
-    setEditingId(null);
-    setShowForm(false);
+    setEditingId(null); setShowForm(false);
   };
 
   const handleEdit = (product: Product) => {
     setFormData({
-      name: product.name,
-      name_ar: product.name_ar || '',
-      description: product.description || '',
-      description_ar: product.description_ar || '',
-      price: product.price.toString(),
-      category: product.category,
-      image: product.image || '',
-      images: product.images || [],
+      name: product.name, name_ar: product.name_ar || '', description: product.description || '',
+      description_ar: product.description_ar || '', price: product.price.toString(),
+      category: product.category, image: product.image || '',
+      images: Array.isArray(product.images) ? product.images : [],
       stock: product.stock.toString()
     });
-    setEditingId(product.id);
-    setShowForm(true);
+    setEditingId(product.id); setShowForm(true);
   };
 
   const handleImageUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      showMessage('Veuillez sélectionner une image valide', 'error');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showMessage('L\'image ne doit pas dépasser 5MB', 'error');
-      return;
-    }
-
+    if (!file.type.startsWith('image/')) return showMessage('Image invalide', 'error');
+    if (file.size > 5 * 1024 * 1024) return showMessage('Image trop lourde (max 5MB)', 'error');
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `products/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage.from('products').upload(filePath, file);
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from('products').getPublicUrl(filePath);
-      setFormData({ ...formData, image: data.publicUrl });
+      const { error } = await supabase.storage.from('products').upload(`products/${fileName}`, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from('products').getPublicUrl(`products/${fileName}`);
+      setFormData(prev => ({ ...prev, image: data.publicUrl }));
       showMessage('Image principale uploadée !', 'success');
-    } catch (error: any) {
-      showMessage(`Erreur upload : ${error.message}`, 'error');
-    } finally {
-      setUploading(false);
-    }
+    } catch (error: any) { showMessage(`Erreur : ${error.message}`, 'error'); } finally { setUploading(false); }
   };
 
   const handleMultipleImagesUpload = async (files: FileList) => {
+    if (!files || files.length === 0) return;
     setUploading(true);
-    const uploadedUrls: string[] = [...formData.images];
-    
     try {
+      const newUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        if (!file.type.startsWith('image/')) continue;
-        if (file.size > 5 * 1024 * 1024) {
-          showMessage(`Fichier ${file.name} trop volumineux (max 5MB)`, 'error');
-          continue;
-        }
-
+        if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) continue;
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${i}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `products/${fileName}`;
-
-        const { error } = await supabase.storage.from('products').upload(filePath, file);
+        const { error } = await supabase.storage.from('products').upload(`products/${fileName}`, file);
         if (error) throw error;
-
-        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
-        uploadedUrls.push(data.publicUrl);
+        const { data } = supabase.storage.from('products').getPublicUrl(`products/${fileName}`);
+        newUrls.push(data.publicUrl);
       }
-      
-      setFormData({ ...formData, images: uploadedUrls });
-      showMessage(`${files.length} image(s) ajoutée(s) !`, 'success');
-    } catch (error: any) {
-      showMessage(`Erreur upload : ${error.message}`, 'error');
-    } finally {
-      setUploading(false);
-    }
+      // ✅ Utiliser la forme fonctionnelle pour éviter les problèmes de state
+      setFormData(prev => ({
+        ...prev,
+        images: [...(prev.images || []), ...newUrls]
+      }));
+      showMessage(`${newUrls.length} image(s) ajoutée(s) à la galerie !`, 'success');
+    } catch (error: any) { showMessage(`Erreur : ${error.message}`, 'error'); } finally { setUploading(false); }
   };
 
   const removeImage = (index: number) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: newImages });
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleImageUpload(file);
+    if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
     e.target.value = '';
   };
 
   const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) handleMultipleImagesUpload(files);
+    if (e.target.files && e.target.files.length > 0) handleMultipleImagesUpload(e.target.files);
     e.target.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) handleImageUpload(file);
+    if (e.dataTransfer.files[0]) handleImageUpload(e.dataTransfer.files[0]);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price) {
-      showMessage('Le nom et le prix sont obligatoires', 'error');
-      return;
-    }
+    if (!formData.name || !formData.price) return showMessage('Nom et prix obligatoires', 'error');
     try {
       const productData = {
-        name: formData.name,
-        name_ar: formData.name_ar,
-        description: formData.description,
-        description_ar: formData.description_ar,
+        ...formData,
         price: parseFloat(formData.price),
-        category: formData.category,
-        image: formData.image,
-        images: formData.images,
-        stock: parseInt(formData.stock) || 0
+        stock: parseInt(formData.stock) || 0,
+        images: Array.isArray(formData.images) ? formData.images : []
       };
-      
       let error;
       if (editingId) {
-        const result = await supabase.from('products').update(productData).eq('id', editingId);
-        error = result.error;
+        const res = await supabase.from('products').update(productData).eq('id', editingId);
+        error = res.error;
       } else {
-        const result = await supabase.from('products').insert([productData]);
-        error = result.error;
+        const res = await supabase.from('products').insert([productData]);
+        error = res.error;
       }
-      
       if (error) throw error;
       showMessage(editingId ? 'Produit modifié !' : 'Produit ajouté !', 'success');
-      resetForm();
-      loadProducts();
-    } catch (error: any) {
-      showMessage(`Erreur : ${error.message}`, 'error');
-    }
+      resetForm(); loadProducts();
+    } catch (error: any) { showMessage(`Erreur : ${error.message}`, 'error'); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Supprimer ce produit ?')) return;
-    try {
-      await supabase.from('products').delete().eq('id', id);
-      showMessage('Produit supprimé !', 'success');
-      loadProducts();
-    } catch (error) {
-      showMessage('Erreur suppression', 'error');
-    }
+    try { await supabase.from('products').delete().eq('id', id); showMessage('Supprimé !', 'success'); loadProducts(); } catch (error) { showMessage('Erreur', 'error'); }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="animate-spin text-[#F7941D]" size={40} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#F7941D]" size={40} /></div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Package className="text-[#F7941D]" size={28} />
-            <h1 className="text-2xl font-bold text-[#121212]">Gestion des Produits</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => router.push('/admin')} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Retour</button>
-            <button onClick={() => { resetForm(); setShowForm(true); }} className="bg-[#F7941D] hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-              <Plus size={18} /> Ajouter un produit
-            </button>
-          </div>
+      <div className="bg-white shadow-sm border-b p-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Package className="text-[#F7941D]" /> Gestion des Produits</h1>
+        <div className="flex gap-2">
+          <button onClick={() => router.push('/admin')} className="px-4 py-2 border rounded-lg">Retour</button>
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="bg-[#F7941D] text-white px-4 py-2 rounded-lg flex items-center gap-2"><Plus size={18} /> Ajouter</button>
         </div>
       </div>
-
       <div className="container mx-auto px-4 py-6">
-        {message && (
-          <div className={`mb-4 p-4 rounded-lg font-medium ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{message}</div>
-        )}
-
+        {message && <div className={`mb-4 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{message}</div>}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#121212]">{editingId ? 'Modifier le produit' : 'Ajouter un nouveau produit'}</h2>
-              <button onClick={resetForm} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
-            </div>
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6 border">
+            <div className="flex justify-between mb-4"><h2 className="text-xl font-bold">{editingId ? 'Modifier' : 'Ajouter'}</h2><button onClick={resetForm}><X /></button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit (Français) *</label>
-                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: Coffre-fort mural 40L" />
+              <input type="text" placeholder="Nom (FR)" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="p-2 border rounded" />
+              <input type="text" placeholder="Nom (AR)" value={formData.name_ar} onChange={e => setFormData({...formData, name_ar: e.target.value})} className="p-2 border rounded" dir="rtl" />
+              <input type="number" placeholder="Prix" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="p-2 border rounded" />
+              <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="p-2 border rounded">
+                <option value="coffres-forts">Coffres-forts</option>
+                <option value="extracteur">Extracteur</option>
+                <option value="postes-a-souder">Postes à souder</option>
+                <option value="chargeur-batterie">Chargeur batterie</option>
+              </select>
+              <input type="number" placeholder="Stock" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="p-2 border rounded" />
+              <div className="md:col-span-2 border-2 border-dashed p-6 text-center rounded cursor-pointer hover:border-[#F7941D]" onClick={() => fileInputRef.current?.click()}>
+                {formData.image ? <img src={formData.image} className="h-40 mx-auto" /> : <p>Image principale (Cliquez ou glissez)</p>}
+                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} onDrop={handleDrop} onDragOver={handleDragOver} />
               </div>
-              <div dir="rtl">
-                <label className="block text-sm font-medium text-gray-700 mb-1">اسم المنتج (بالعربية)</label>
-                <input type="text" value={formData.name_ar} onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="مثال: خزنة حائط 40 لتر" />
+              <div className="md:col-span-2 border-2 border-dashed p-4 text-center rounded cursor-pointer hover:border-[#F7941D]" onClick={() => multipleFileInputRef.current?.click()}>
+                <ImageIcon className="mx-auto mb-2 text-gray-400" />
+                <p className="text-sm">Cliquez pour ajouter plusieurs photos (Galerie)</p>
+                <p className="text-xs text-gray-500 mt-1">{formData.images.length} image(s) dans la galerie</p>
+                <input ref={multipleFileInputRef} type="file" multiple className="hidden" onChange={handleMultipleFilesChange} accept="image/*" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix (DA) *</label>
-                <input type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: 45000" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie *</label>
-                <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]">
-                  <option value="coffres-forts">Coffres-forts</option>
-                  <option value="extracteur">Extracteur d'air</option>
-                  <option value="postes-a-souder">Postes à souder</option>
-                  <option value="chargeur-batterie">Chargeur de batterie</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                <input type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Ex: 10" />
-              </div>
-              
-              {/* Image Principale */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image principale (affiche dans les listes) *</label>
-                <div onDrop={handleDrop} onDragOver={handleDragOver} onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#F7941D] hover:bg-orange-50 transition-all cursor-pointer">
-                  {formData.image ? (
-                    <div className="space-y-2">
-                      <img src={formData.image} alt="Principale" className="mx-auto max-h-40 rounded-lg" />
-                      <p className="text-sm text-[#F7941D]">Cliquez pour changer l'image principale</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Upload className="mx-auto text-gray-400" size={48} />
-                      <p className="text-gray-500">Glissez ou cliquez pour l'image principale</p>
-                    </div>
-                  )}
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                </div>
-                {uploading && <p className="text-sm text-[#F7941D] mt-2">Upload en cours...</p>}
-              </div>
-
-              {/* Galerie d'images multiples */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Galerie photos (plusieurs images)</label>
-                <div onClick={() => multipleFileInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#F7941D] hover:bg-gray-50 transition-all cursor-pointer">
-                  <ImageIcon className="mx-auto text-gray-400 mb-2" size={32} />
-                  <p className="text-sm text-gray-600">Cliquez pour ajouter plusieurs photos</p>
-                  <p className="text-xs text-gray-400">PNG, JPG jusqu'à 5MB chacune</p>
-                  <input ref={multipleFileInputRef} type="file" accept="image/*" multiple onChange={handleMultipleFilesChange} className="hidden" />
-                </div>
-                
-                {formData.images.length > 0 && (
-                  <div className="mt-4 grid grid-cols-4 gap-3">
-                    {formData.images.map((img, idx) => (
-                      <div key={idx} className="relative group">
-                        <img src={img} alt={`Galerie ${idx}`} className="w-full h-24 object-cover rounded-lg" />
-                        <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              {formData.images.length > 0 && (
+                <div className="md:col-span-2">
+                  <p className="text-sm font-medium mb-2">Images de la galerie :</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {formData.images.map((img, i) => (
+                      <div key={i} className="relative group">
+                        <img src={img} className="h-24 w-full object-cover rounded border" />
+                        <button onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <X size={14} />
                         </button>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Français)</label>
-                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="Description du produit..." />
-              </div>
-              <div className="md:col-span-2" dir="rtl">
-                <label className="block text-sm font-medium text-gray-700 mb-1">الوصف (بالعربية)</label>
-                <textarea value={formData.description_ar} onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7941D]" placeholder="وصف المنتج..." />
-              </div>
+                </div>
+              )}
+              <textarea placeholder="Description (FR)" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="md:col-span-2 p-2 border rounded" rows={3} />
+              <textarea placeholder="Description (AR)" value={formData.description_ar} onChange={e => setFormData({...formData, description_ar: e.target.value})} className="md:col-span-2 p-2 border rounded" rows={3} dir="rtl" />
             </div>
-            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-              <button onClick={resetForm} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 font-medium">Annuler</button>
-              <button onClick={handleSave} className="bg-[#F7941D] hover:bg-orange-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium">
-                <Save size={18} /> {editingId ? 'Modifier' : 'Ajouter'}
-              </button>
+            <div className="flex justify-end gap-2 mt-4">
+              <button onClick={resetForm} className="px-4 py-2 border rounded">Annuler</button>
+              <button onClick={handleSave} className="bg-[#F7941D] text-white px-6 py-2 rounded flex items-center gap-2"><Save size={18} /> Enregistrer</button>
             </div>
           </div>
         )}
-
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-bold text-[#121212]">Liste des produits ({products.length})</h2>
-          </div>
-          {products.length === 0 ? (
-            <div className="p-12 text-center text-gray-500"><Package className="mx-auto mb-3 text-gray-300" size={48} /><p>Aucun produit trouvé.</p></div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Nom</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Catégorie</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Prix</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Photos</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-500">#{product.id}</td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-bold text-[#121212]">{product.name}</div>
-                        {product.name_ar && <div className="text-xs text-gray-500 mt-1" dir="rtl">{product.name_ar}</div>}
-                      </td>
-                      <td className="px-6 py-4"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-[#F7941D]">{product.category}</span></td>
-                      <td className="px-6 py-4 text-sm font-bold text-[#121212]">{product.price.toLocaleString()} DA</td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {product.images?.length || 0} photo{(product.images?.length || 0) > 1 ? 's' : ''}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button>
-                          <button onClick={() => handleDelete(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50"><tr><th className="p-4 text-left">ID</th><th className="p-4 text-left">Nom</th><th className="p-4 text-left">Catégorie</th><th className="p-4 text-left">Prix</th><th className="p-4 text-left">Photos</th><th className="p-4 text-right">Actions</th></tr></thead>
+            <tbody className="divide-y">
+              {products.map(p => (
+                <tr key={p.id} className="hover:bg-gray-50">
+                  <td className="p-4">#{p.id}</td>
+                  <td className="p-4 font-bold">{p.name}</td>
+                  <td className="p-4"><span className="bg-orange-100 text-[#F7941D] px-2 py-1 rounded text-xs">{p.category}</span></td>
+                  <td className="p-4 font-bold">{p.price} DA</td>
+                  <td className="p-4"><span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{p.images?.length || 0} photo(s)</span></td>
+                  <td className="p-4 text-right flex justify-end gap-2">
+                    <button onClick={() => handleEdit(p)} className="p-2 text-blue-600 hover:bg-blue-50 rounded"><Edit size={18} /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 size={18} /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
