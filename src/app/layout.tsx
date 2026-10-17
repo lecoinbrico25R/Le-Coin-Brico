@@ -1,28 +1,26 @@
-import WhatsAppButton from '@/components/WhatsAppButton';
-import type { Metadata } from "next";
-import WhatsAppButton from '@/components/WhatsAppButton';
-import "./globals.css";
-import WhatsAppButton from '@/components/WhatsAppButton';
-import { TranslationProvider } from "@/context/TranslationContext";
-import WhatsAppButton from '@/components/WhatsAppButton';
-import { CartProvider } from "@/context/CartContext";
-import WhatsAppButton from '@/components/WhatsAppButton';
-import { WishlistProvider } from "@/context/WishlistContext";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { TranslationProvider } from '@/context/TranslationContext';
+import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
+const inter = Inter({ subsets: ['latin'] });
+
 export const metadata: Metadata = {
-  title: "LE COIN BRICO - Coffres-forts et Outillage en Algérie",
-  description: "Votre site de bricolage et de sécurité en Algérie. Coffres-forts, extracteurs et outillage professionnel.",
+  title: 'LE COIN BRICO',
+  description: 'La puissance entre vos mains - Coffres-forts, extracteurs et outillage professionnel.',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="fr">
-      <body>
+      <body className={inter.className}>
         <TranslationProvider>
           <CartProvider>
             <WishlistProvider>
@@ -30,9 +28,9 @@ export default function RootLayout({
             </WishlistProvider>
           </CartProvider>
         </TranslationProvider>
-      <WhatsAppButton />
-  <WhatsAppButton />
-  </body>
+        {/* Le bouton WhatsApp apparaît ici sur TOUTES les pages publiques */}
+        <WhatsAppButton />
+      </body>
     </html>
   );
 }
