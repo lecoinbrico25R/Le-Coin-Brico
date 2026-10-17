@@ -38,7 +38,7 @@ export default function ProductDetail() {
     try {
       const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
       if (!error && data) {
-        setProduct(data);
+        setProduct(data); console.log(' IMAGES:', data.images, '| TYPE:', typeof data.images, '| isArray:', Array.isArray(data.images));
         setSelectedImage(data.image || (data.images && data.images[0]) || '/images/placeholder.jpg');
       }
     } catch (error) {
