@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ShoppingCart, Heart, ArrowLeft, Truck, Shield, Loader2 } from 'lucide-react';
+import { ShoppingCart, Heart, Truck, Shield, Loader2, Menu, X } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -18,6 +18,16 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { href: '/', label: 'Accueil' },
+    { href: '/coffres-forts', label: 'Coffres-forts' },
+    { href: '/extracteur', label: "Extracteur d'air" },
+    { href: '/postes-a-souder', label: 'Postes à souder' },
+    { href: '/chargeur-batterie', label: 'Chargeur batterie' },
+    { href: '/contact', label: 'Contact' },
+  ];
 
   useEffect(() => {
     if (id) fetchProduct();
@@ -63,22 +73,46 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <header className="bg-[#121212] text-white p-4 sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+      {/* HEADER RESPONSIVE */}
+      <header className="bg-[#121212] text-white sticky top-0 z-50 shadow-lg border-b border-gray-800">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-white p-1">
               <img src="/images/logo.png" alt="LCB" className="w-full h-full object-contain" />
             </div>
-            <h1 className="font-bold text-xl">LE COIN BRICO</h1>
+            <div>
+              <h1 className="font-bold text-lg leading-tight">LE COIN BRICO</h1>
+              <p className="text-[10px] text-gray-400 hidden sm:block">La puissance entre vos mains</p>
+            </div>
           </Link>
-          <Link href="/" className="text-sm hover:text-[#F7941D] flex items-center gap-2 font-medium">
-            <ArrowLeft size={16} /> Retour
-          </Link>
+
+          <nav className="hidden md:flex gap-6">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="transition-colors hover:text-[#F7941D]">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 hover:bg-gray-800 rounded-lg">
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
+
+        {mobileMenuOpen && (
+          <nav className="md:hidden bg-[#1a1a1a] border-t border-gray-800 px-4 py-4 space-y-1">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </header>
 
-      <div className="flex-grow container mx-auto px-4 py-12">
-        <div className="text-sm text-gray-500 mb-6 flex items-center gap-2">
+      <div className="flex-grow container mx-auto px-4 py-6 sm:py-12">
+        {/* Fil d'ariane */}
+        <div className="text-sm text-gray-500 mb-6 flex items-center gap-2 flex-wrap">
           <Link href="/" className="hover:text-[#F7941D]">Accueil</Link> 
           <span>/</span>
           <Link href={`/${product.category}`} className="hover:text-[#F7941D] capitalize">{product.category}</Link> 
@@ -86,13 +120,15 @@ export default function ProductDetail() {
           <span className="text-[#121212] font-medium truncate max-w-[200px]">{product.name}</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 bg-white p-4 sm:p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
+          
+          {/* Galerie Photos */}
           <div className="space-y-4">
             <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center border border-gray-200">
               <img src={selectedImage} alt={product.name} className="w-full h-full object-contain p-4" />
             </div>
             {galleryImages.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
                 {galleryImages.map((img: string, idx: number) => (
                   <button 
                     key={idx} 
@@ -106,37 +142,39 @@ export default function ProductDetail() {
             )}
           </div>
 
+          {/* Informations Produit */}
           <div className="flex flex-col">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#121212] mb-4 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#121212] mb-3 sm:mb-4 leading-tight">
               {language === 'ar' && product.name_ar ? product.name_ar : product.name}
             </h1>
-            <div className="text-3xl font-bold text-[#F7941D] mb-6">{product.price.toLocaleString()} DA</div>
+            <div className="text-2xl sm:text-3xl font-bold text-[#F7941D] mb-4 sm:mb-6">{product.price.toLocaleString()} DA</div>
             
-            <div className="prose max-w-none text-gray-600 mb-8 whitespace-pre-wrap text-lg leading-relaxed">
+            <div className="prose max-w-none text-gray-600 mb-6 sm:mb-8 whitespace-pre-wrap text-base sm:text-lg leading-relaxed">
               {language === 'ar' && product.description_ar ? product.description_ar : product.description}
             </div>
 
-            <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <div className="space-y-3 mb-6 sm:mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div className="flex items-center gap-3 text-sm text-gray-700">
-                <Truck className="text-[#F7941D]" size={20} /> 
+                <Truck className="text-[#F7941D] flex-shrink-0" size={20} /> 
                 <span>Livraison disponible partout en Algérie</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-700">
-                <Shield className="text-[#F7941D]" size={20} /> 
+                <Shield className="text-[#F7941D] flex-shrink-0" size={20} /> 
                 <span>Produit garanti et de qualité professionnelle</span>
               </div>
             </div>
 
-            <div className="flex gap-4 mt-auto">
+            {/* Boutons d'action adaptés au mobile */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-auto">
               <button 
                 onClick={handleAddToCart}
-                className="flex-1 bg-[#121212] hover:bg-[#F7941D] text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-xl"
+                className="flex-1 bg-[#121212] hover:bg-[#F7941D] text-white font-bold py-3 sm:py-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl min-h-[48px]"
               >
-                <ShoppingCart size={22} /> Ajouter au panier
+                <ShoppingCart size={20} /> Ajouter au panier
               </button>
               <button 
                 onClick={() => isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist({ id: product.id, name: product.name, price: product.price, image: product.image })}
-                className={`p-4 border-2 rounded-xl transition-colors ${isInWishlist(product.id) ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D]'}`}
+                className={`p-3 sm:p-4 border-2 rounded-xl transition-colors flex items-center justify-center min-h-[48px] ${isInWishlist(product.id) ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 hover:border-[#F7941D] hover:text-[#F7941D]'}`}
               >
                 <Heart size={24} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
               </button>
@@ -145,7 +183,8 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      <footer className="bg-[#121212] text-white py-8 mt-auto">
+      {/* Footer Simplifié */}
+      <footer className="bg-[#121212] text-white py-6 sm:py-8 mt-auto">
         <div className="container mx-auto px-4 text-center text-sm">
           <p>© 2026 LE COIN BRICO. {t('footer.rights') || 'Tous droits réservés'}</p>
         </div>
