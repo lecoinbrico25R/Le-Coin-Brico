@@ -1,3 +1,4 @@
+import WhatsAppButton from '@/components/WhatsAppButton';
 import type { Metadata } from "next";
 import WhatsAppButton from '@/components/WhatsAppButton';
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({
           </CartProvider>
         </TranslationProvider>
       <WhatsAppButton />
+  <WhatsAppButton />
   </body>
     </html>
   );
