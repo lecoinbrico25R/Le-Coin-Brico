@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+import WhatsAppButton from '@/components/WhatsAppButton';
 import "./globals.css";
+import WhatsAppButton from '@/components/WhatsAppButton';
 import { TranslationProvider } from "@/context/TranslationContext";
+import WhatsAppButton from '@/components/WhatsAppButton';
 import { CartProvider } from "@/context/CartContext";
+import WhatsAppButton from '@/components/WhatsAppButton';
 import { WishlistProvider } from "@/context/WishlistContext";
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 export const metadata: Metadata = {
   title: "LE COIN BRICO - Coffres-forts et Outillage en Algérie",
@@ -24,7 +29,8 @@ export default function RootLayout({
             </WishlistProvider>
           </CartProvider>
         </TranslationProvider>
-      </body>
+      <WhatsAppButton />
+  </body>
     </html>
   );
 }

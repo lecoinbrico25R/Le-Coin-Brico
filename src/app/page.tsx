@@ -7,7 +7,6 @@ import { useTranslation } from '@/context/TranslationContext';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default function HomePage() {
   const { language, t } = useTranslation();
@@ -168,7 +167,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <WhatsAppButton />
       <footer className="bg-[#121212] text-white py-6 sm:py-8 mt-auto">
         <div className="container mx-auto px-4 text-center text-sm">
           <p>© 2026 LE COIN BRICO. Tous droits réservés</p>
