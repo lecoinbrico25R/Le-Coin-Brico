@@ -27,6 +27,19 @@ export default function ProductDetail() {
     { href: '/contact', label: 'Contact' },
   ];
 
+  // Fonction robuste pour lire les images (tableau ou texte JSON)
+  const parseImages = (imagesData: any, mainImage: string): string[] => {
+    if (!imagesData) return mainImage ? [mainImage] : [];
+    if (Array.isArray(imagesData)) return imagesData.length > 0 ? imagesData : (mainImage ? [mainImage] : []);
+    if (typeof imagesData === 'string') {
+      try {
+        const parsed = JSON.parse(imagesData);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) { console.error('Erreur parsing images:', e); }
+    }
+    return mainImage ? [mainImage] : [];
+  };
+
   useEffect(() => { if (id) fetchProduct(); }, [id]);
 
   const fetchProduct = async () => {
@@ -49,21 +62,15 @@ export default function ProductDetail() {
     </div>
   );
 
-  const galleryImages = product.images && product.images.length > 0 ? product.images : [product.image];
+  const galleryImages = parseImages(product.images, product.image);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
-  };
+  const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+  const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
 
   const handleAddToCart = () => addToCart({ id: product.id, name: product.name, price: product.price, image: product.image });
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* HEADER RESPONSIVE */}
       <header className="bg-[#121212] text-white sticky top-0 z-50 shadow-lg border-b border-gray-800">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -94,7 +101,6 @@ export default function ProductDetail() {
       </header>
 
       <div className="flex-grow container mx-auto px-4 py-6 sm:py-12">
-        {/* Fil d'ariane */}
         <div className="text-sm text-gray-500 mb-6 flex items-center gap-2 flex-wrap">
           <Link href="/" className="hover:text-[#F7941D]">Accueil</Link> <span>/</span>
           <Link href={`/${product.category}`} className="hover:text-[#F7941D] capitalize">{product.category}</Link> <span>/</span>
@@ -102,69 +108,37 @@ export default function ProductDetail() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 bg-white p-4 sm:p-6 md:p-10 rounded-2xl shadow-sm border border-gray-100">
-          {/* CARROUSEL PHOTOS */}
           <div className="space-y-4">
             <div className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200 group">
-              {/* Image principale */}
               <img 
                 src={galleryImages[currentImageIndex]} 
                 alt={product.name} 
                 className="w-full h-full object-contain p-4 transition-opacity duration-300"
               />
-              
-              {/* Bouton Précédent */}
               {galleryImages.length > 1 && (
-                <button 
-                  onClick={prevImage}
-                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#121212] p-2 sm:p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                  aria-label="Image précédente"
-                >
-                  <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
-                </button>
-              )}
-              
-              {/* Bouton Suivant */}
-              {galleryImages.length > 1 && (
-                <button 
-                  onClick={nextImage}
-                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#121212] p-2 sm:p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                  aria-label="Image suivante"
-                >
-                  <ChevronRight size={20} className="sm:w-6 sm:h-6" />
-                </button>
-              )}
-
-              {/* Indicateurs de position (dots) */}
-              {galleryImages.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 px-3 py-2 rounded-full">
-                  {galleryImages.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentImageIndex(idx)}
-                      className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-[#F7941D] w-6' : 'bg-white/70'}`}
-                      aria-label={`Voir image ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Compteur d'images */}
-              {galleryImages.length > 1 && (
-                <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs sm:text-sm">
-                  {currentImageIndex + 1} / {galleryImages.length}
-                </div>
+                <>
+                  <button onClick={prevImage} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#121212] p-2 sm:p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Image précédente">
+                    <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
+                  </button>
+                  <button onClick={nextImage} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#121212] p-2 sm:p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10" aria-label="Image suivante">
+                    <ChevronRight size={20} className="sm:w-6 sm:h-6" />
+                  </button>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 px-3 py-2 rounded-full">
+                    {galleryImages.map((_, idx) => (
+                      <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={`h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-[#F7941D] w-6' : 'bg-white/70 w-2'}`} aria-label={`Voir image ${idx + 1}`} />
+                    ))}
+                  </div>
+                  <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs sm:text-sm">
+                    {currentImageIndex + 1} / {galleryImages.length}
+                  </div>
+                </>
               )}
             </div>
 
-            {/* Miniatures (optionnel - visible uniquement sur desktop) */}
             {galleryImages.length > 1 && (
               <div className="hidden sm:grid grid-cols-5 gap-2">
                 {galleryImages.map((img: string, idx: number) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => setCurrentImageIndex(idx)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === idx ? 'border-[#F7941D] ring-2 ring-[#F7941D]/20' : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'}`}
-                  >
+                  <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === idx ? 'border-[#F7941D] ring-2 ring-[#F7941D]/20' : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'}`}>
                     <img src={img} alt={`Vue ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
@@ -172,7 +146,6 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Informations Produit */}
           <div className="flex flex-col">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#121212] mb-3 sm:mb-4 leading-tight">
               {language === 'ar' && product.name_ar ? product.name_ar : product.name}
