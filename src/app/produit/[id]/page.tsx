@@ -70,28 +70,6 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* 🚨 ZONE DE DIAGNOSTIC TEMPORAIRE - À SUPPRIMER APRÈS */}
-      <div className="bg-yellow-100 border-b-4 border-yellow-500 p-4">
-        <h2 className="font-bold text-lg mb-2">🔍 DIAGNOSTIC IMAGES (à supprimer après)</h2>
-        <div className="bg-white p-4 rounded-lg font-mono text-sm overflow-x-auto">
-          <p><strong>ID Produit :</strong> {product.id}</p>
-          <p><strong>Nom :</strong> {product.name}</p>
-          <p><strong>Image principale :</strong> {product.image || '❌ VIDE'}</p>
-          <p><strong>Colonne images (brut) :</strong></p>
-          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs break-all">
-            {JSON.stringify(product.images, null, 2)}
-          </pre>
-          <p><strong>Type de images :</strong> {typeof product.images}</p>
-          <p><strong>Est un tableau ?</strong> {Array.isArray(product.images) ? '✅ OUI' : '❌ NON'}</p>
-          <p><strong>Nombre d'images après parsing :</strong> {galleryImages.length}</p>
-          <p><strong>Images parsées :</strong></p>
-          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs break-all">
-            {JSON.stringify(galleryImages, null, 2)}
-          </pre>
-        </div>
-      </div>
-      {/* FIN ZONE DE DIAGNOSTIC */}
-
       <header className="bg-[#121212] text-white sticky top-0 z-50 shadow-lg border-b border-gray-800">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
