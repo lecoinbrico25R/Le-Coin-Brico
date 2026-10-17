@@ -5,6 +5,7 @@ import { TranslationProvider } from '@/context/TranslationContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,11 +26,17 @@ export default function RootLayout({
           <CartProvider>
             <WishlistProvider>
               {children}
+              
+              {/* Bouton de changement de langue - À l'intérieur du Provider pour fonctionner */}
+              <div className="fixed top-20 sm:top-24 right-4 z-[60]">
+                <LanguageSwitcher />
+              </div>
+              
+              {/* Bouton WhatsApp - en bas à droite */}
+              <WhatsAppButton />
             </WishlistProvider>
           </CartProvider>
         </TranslationProvider>
-        {/* Le bouton WhatsApp apparaît ici sur TOUTES les pages publiques */}
-        <WhatsAppButton />
       </body>
     </html>
   );
